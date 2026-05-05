@@ -4,11 +4,9 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-import { AnimatePresence } from "framer-motion";
 import { Fraunces, DM_Sans } from "next/font/google";
 import { initParse } from "@/lib/parseConfig";
 import { useAuthStore } from "@/store/useAuthStore";
-import SplashScreen from "@/components/common/SplashScreen";
 import "@/styles/globals.css";
 
 const SITE_URL  = "https://pg-website-gamma.vercel.app";
@@ -36,7 +34,6 @@ export default function App({ Component, pageProps }: AppProps) {
   const restoreSession = useAuthStore((s) => s.restoreSession);
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -95,11 +92,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="robots" content="index, follow, max-image-preview:large" />
       </Head>
       <QueryClientProvider client={queryClient}>
-        <AnimatePresence mode="wait">
-          {mounted && showSplash && (
-            <SplashScreen key="splash" onComplete={() => setShowSplash(false)} />
-          )}
-        </AnimatePresence>
         {mounted ? <Component {...pageProps} /> : null}
         <Toaster
           position="top-right"
