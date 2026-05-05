@@ -11,7 +11,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import SplashScreen from "@/components/common/SplashScreen";
 import "@/styles/globals.css";
 
-const SITE_URL  = "https://roomsy-pg-website.vercel.app";
+const SITE_URL  = "https://pg-website-gamma.vercel.app";
 const SITE_NAME = "Roomsy";
 const SITE_DESC = "Find verified PGs (Paying Guest accommodations) across India. Compare prices, view photos, check amenities, and book daily or monthly stays — all in one place.";
 const OG_IMAGE  = `${SITE_URL}/apple-touch-icon.png`;
