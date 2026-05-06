@@ -2,6 +2,7 @@ import { PG, Occupancy } from "@/types/pg";
 import { DUMMY_PGS } from "@/lib/dummyPGs";
 
 const OVERRIDES_KEY = "roomsy_pg_overrides";
+const CREATED_PGS_KEY = "roomsy_created_pgs";
 
 type PGOverride = Partial<Pick<PG, "sharingPrices" | "dailyPrices" | "occupancy" | "amenities" | "photos" | "availableBeds" | "monthlyPrice" | "isApproved" | "isSuspended">>;
 
@@ -21,15 +22,35 @@ function writeOverrides(overrides: Record<string, PGOverride>) {
   } catch {}
 }
 
+function readCreatedPGs(): PG[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(CREATED_PGS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeCreatedPGs(pgs: PG[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(CREATED_PGS_KEY, JSON.stringify(pgs));
+  } catch {}
+}
+
+function allPGsRaw(): PG[] {
+  return [...DUMMY_PGS, ...readCreatedPGs()];
+}
+
 export function getPGsForOwner(ownerId: string): PG[] {
   const overrides = readOverrides();
-  return DUMMY_PGS
+  return allPGsRaw()
     .filter((pg) => pg.owner.objectId === ownerId)
     .map((pg) => applyOverride(pg, overrides[pg.objectId]));
 }
 
 export function getPGWithOverrides(pgId: string): PG | null {
-  const pg = DUMMY_PGS.find((p) => p.objectId === pgId);
+  const pg = allPGsRaw().find((p) => p.objectId === pgId);
   if (!pg) return null;
   const overrides = readOverrides();
   return applyOverride(pg, overrides[pgId]);
@@ -95,7 +116,28 @@ export function removePGPhoto(pgId: string, photoUrl: string) {
 
 export function getAllPGsWithOverrides(): PG[] {
   const overrides = readOverrides();
-  return DUMMY_PGS.map((pg) => applyOverride(pg, overrides[pg.objectId]));
+  return allPGsRaw().map((pg) => applyOverride(pg, overrides[pg.objectId]));
+}
+
+export type PGDraft = Omit<PG, "objectId" | "isApproved" | "isSuspended" | "rating" | "monthlyPrice">;
+
+export function createPG(draft: PGDraft): PG {
+  const sharingValues = Object.values(draft.sharingPrices).filter(
+    (v): v is number => typeof v === "number" && v > 0
+  );
+  const lowestMonthly = sharingValues.length > 0 ? Math.min(...sharingValues) : 0;
+  const newPG: PG = {
+    ...draft,
+    objectId: `user_pg_${Date.now()}`,
+    isApproved: false,
+    isSuspended: false,
+    rating: 0,
+    monthlyPrice: lowestMonthly,
+  };
+  const list = readCreatedPGs();
+  list.push(newPG);
+  writeCreatedPGs(list);
+  return newPG;
 }
 
 export function approvePG(pgId: string) {

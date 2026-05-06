@@ -8,7 +8,7 @@ import { getPGsForOwner } from "@/lib/dummyPGAdmin";
 import { getBookingsForPG } from "@/lib/dummyBookings";
 import { PG } from "@/types/pg";
 import { Sidebar } from "../dashboard";
-import { HiLocationMarker, HiChevronRight, HiOfficeBuilding, HiUsers, HiClock, HiBadgeCheck, HiArrowLeft } from "react-icons/hi";
+import { HiLocationMarker, HiChevronRight, HiOfficeBuilding, HiUsers, HiClock, HiBadgeCheck, HiArrowLeft, HiPlus } from "react-icons/hi";
 
 const TYPE_LABEL: Record<string, string> = { boys: "Boys", girls: "Girls", coliving: "Co-living" };
 const TYPE_COLOR: Record<string, string> = { boys: "#3B82F6", girls: "#EC4899", coliving: "#8B5CF6" };
@@ -57,6 +57,18 @@ export default function MyPGsPage() {
                 {pgs.length} propert{pgs.length !== 1 ? "ies" : "y"} · tap to manage
               </p>
             </div>
+            <Link
+              href="/pg-admin/my-pgs/new"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "6px",
+                padding: "10px 18px", borderRadius: "100px",
+                backgroundColor: "#FF385C", color: "#fff",
+                fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600",
+                textDecoration: "none", marginLeft: "auto", whiteSpace: "nowrap",
+              }}
+            >
+              <HiPlus size={14} /> Add PG
+            </Link>
           </div>
 
           <div className="pg-content">
@@ -142,7 +154,19 @@ export default function MyPGsPage() {
             ) : (
               <div style={{ textAlign: "center", padding: "60px 24px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #E8E4DE" }}>
                 <HiOfficeBuilding size={40} color="#D6D3CE" style={{ marginBottom: "16px" }} />
-                <p style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "#78716C" }}>No PGs found.</p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "#78716C", marginBottom: "16px" }}>You haven&apos;t listed any PGs yet.</p>
+                <Link
+                  href="/pg-admin/my-pgs/new"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    padding: "10px 22px", borderRadius: "100px",
+                    backgroundColor: "#FF385C", color: "#fff",
+                    fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600",
+                    textDecoration: "none",
+                  }}
+                >
+                  <HiPlus size={14} /> List your first PG
+                </Link>
               </div>
             )}
           </div>
