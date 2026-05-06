@@ -42,6 +42,19 @@ function formatDate(d: string) {
   return new Date(y, m - 1, day).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
+function endDateForBooking(b: StoredBooking): string {
+  if (b.stayType === "monthly" && b.months) {
+    const [y, m, d] = b.fromDate.split("-").map(Number);
+    const end = new Date(y, m - 1, d);
+    end.setMonth(end.getMonth() + b.months);
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, "0");
+    const dd = String(end.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return b.toDate || "";
+}
+
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3600000);
@@ -496,7 +509,7 @@ export default function PGAdminDashboard() {
                             {b.tenantName || "Guest"} · {b.pgName}
                           </div>
                           <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C" }}>
-                            {SHARING_LABEL[b.sharing]} · {b.stayType === "monthly" ? `${b.months}mo from ${formatDate(b.fromDate)}` : `${b.nights}n from ${formatDate(b.fromDate)}`}
+                            {SHARING_LABEL[b.sharing]} · {formatDate(b.fromDate)} → {formatDate(endDateForBooking(b))}
                           </div>
                         </div>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>

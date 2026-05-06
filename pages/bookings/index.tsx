@@ -43,6 +43,19 @@ function formatDate(d: string) {
   return new Date(y, m - 1, day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function endDateForBooking(b: StoredBooking): string {
+  if (b.stayType === "monthly" && b.months) {
+    const [y, m, d] = b.fromDate.split("-").map(Number);
+    const end = new Date(y, m - 1, d);
+    end.setMonth(end.getMonth() + b.months);
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, "0");
+    const dd = String(end.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return b.toDate || "";
+}
+
 function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: (id: string) => void }) {
   const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
   const canCancel = booking.status === "pending" || booking.status === "confirmed";
@@ -73,53 +86,54 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
               <span>{booking.pgArea}, Hyderabad</span>
             </p>
           </div>
-          <div className="bk-card-head-right">
-            <span className="bk-card-total-mini">₹{booking.total.toLocaleString()}</span>
-            <button
-              className="bk-card-toggle"
-              onClick={() => setExpanded((v) => !v)}
-              aria-expanded={expanded}
-              aria-label={expanded ? "Show less" : "Show more"}
-            >
-              <HiChevronDown size={18} />
-            </button>
-          </div>
+          <button
+            className="bk-card-toggle"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Show less" : "Show more"}
+          >
+            <HiChevronDown size={18} />
+          </button>
         </header>
+
+        <div className="bk-card-meta">
+          <span className="bk-card-pill bk-card-pill-soft">{SHARING_LABEL[booking.sharing]}</span>
+          <span className="bk-card-pill bk-card-pill-soft">{booking.stayType === "monthly" ? "Monthly" : "Daily"}</span>
+          <span className="bk-card-meta-dates">
+            <HiCalendar size={12} />
+            <span>{formatDate(booking.fromDate)} → {formatDate(endDateForBooking(booking))}</span>
+          </span>
+        </div>
 
         {expanded && (
           <>
-            <div className="bk-card-pills">
-              <span className="bk-card-pill">{SHARING_LABEL[booking.sharing]}</span>
-              <span className="bk-card-pill">{booking.stayType === "monthly" ? "Monthly" : "Daily"}</span>
-            </div>
+            <div className="bk-card-divider" />
 
-            <div className="bk-card-dates">
-              <HiCalendar size={13} color="#78716C" />
-              {booking.stayType === "monthly" ? (
-                <span>
-                  From <strong>{formatDate(booking.fromDate)}</strong> · {booking.months} month{booking.months !== 1 ? "s" : ""}
+            <div className="bk-card-stats">
+              <div className="bk-card-stat">
+                <span className="bk-card-stat-label">Check-in</span>
+                <span className="bk-card-stat-value">{formatDate(booking.fromDate)}</span>
+              </div>
+              <div className="bk-card-stat">
+                <span className="bk-card-stat-label">Check-out</span>
+                <span className="bk-card-stat-value">
+                  {formatDate(endDateForBooking(booking))}
+                  {booking.stayType === "monthly" && booking.months ? ` · ${booking.months}mo` : ""}
                 </span>
-              ) : (
-                <span>
-                  <strong>{formatDate(booking.fromDate)}</strong> → <strong>{formatDate(booking.toDate || "")}</strong>
-                  {booking.nights ? ` · ${booking.nights} night${booking.nights !== 1 ? "s" : ""}` : ""}
-                </span>
-              )}
+              </div>
+              <div className="bk-card-stat bk-card-stat-total">
+                <span className="bk-card-stat-label">Total</span>
+                <span className="bk-card-stat-value bk-card-stat-amount">₹{booking.total.toLocaleString()}</span>
+              </div>
             </div>
 
             <footer className="bk-card-foot">
-              <div className="bk-card-total">
-                <span className="bk-card-total-label">Total</span>
-                <span className="bk-card-total-value">₹{booking.total.toLocaleString()}</span>
-              </div>
-              <div className="bk-card-actions">
-                <Link href={`/pgs/${booking.pgId}`} className="bk-btn bk-btn-ghost">View PG</Link>
-                {canCancel && (
-                  <button onClick={() => onCancel(booking.objectId)} className="bk-btn bk-btn-danger">
-                    Cancel
-                  </button>
-                )}
-              </div>
+              <Link href={`/pgs/${booking.pgId}`} className="bk-btn bk-btn-ghost">View PG</Link>
+              {canCancel && (
+                <button onClick={() => onCancel(booking.objectId)} className="bk-btn bk-btn-danger">
+                  Cancel booking
+                </button>
+              )}
             </footer>
           </>
         )}
@@ -129,20 +143,21 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
         .bk-card {
           background: #fff;
           border: 1px solid #E8E4DE;
-          border-radius: 16px;
+          border-radius: 18px;
           overflow: hidden;
           display: flex;
-          box-shadow: 0 1px 3px rgba(28,25,23,0.05);
+          box-shadow: 0 1px 2px rgba(28,25,23,0.04);
           transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
         }
         .bk-card:hover {
-          box-shadow: 0 8px 24px rgba(28,25,23,0.08);
+          box-shadow: 0 10px 28px rgba(28,25,23,0.09);
           border-color: #DCD5CC;
+          transform: translateY(-1px);
         }
 
         .bk-card-img {
           position: relative;
-          width: 200px;
+          width: 220px;
           flex-shrink: 0;
           background: #F0EDE8;
         }
@@ -171,24 +186,27 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
           left: 12px;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 4px 10px;
+          gap: 6px;
+          padding: 5px 11px;
           border-radius: 100px;
           font-family: var(--font-body);
           font-size: 11px;
-          font-weight: 600;
-          backdrop-filter: blur(4px);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          text-transform: uppercase;
+          backdrop-filter: blur(6px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
         .bk-card-status-dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
         }
 
         .bk-card-body {
           flex: 1;
-          padding: 16px 20px;
+          padding: 18px 22px;
           display: flex;
           flex-direction: column;
           gap: 10px;
@@ -201,19 +219,6 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
           min-width: 0;
         }
         .bk-card-head-text { flex: 1; min-width: 0; }
-        .bk-card-head-right {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-        }
-        .bk-card-total-mini {
-          font-family: var(--font-display);
-          font-size: 15px;
-          font-weight: 700;
-          color: #1C1917;
-          letter-spacing: -0.2px;
-        }
         .bk-card-toggle {
           width: 32px;
           height: 32px;
@@ -226,6 +231,7 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
           justify-content: center;
           cursor: pointer;
           padding: 0;
+          flex-shrink: 0;
           transition: background 0.15s, border-color 0.15s, transform 0.2s;
         }
         .bk-card-toggle:hover {
@@ -237,9 +243,6 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
         }
         .bk-card.is-expanded .bk-card-toggle :global(svg) {
           transform: rotate(180deg);
-        }
-        .bk-card.is-expanded .bk-card-total-mini {
-          display: none;
         }
         .bk-card-title {
           font-family: var(--font-display);
@@ -261,70 +264,105 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
           font-size: 12px;
           color: #78716C;
         }
-        .bk-card-pills {
+
+        /* Compact meta row — always visible (collapsed AND expanded) */
+        .bk-card-meta {
           display: flex;
           flex-wrap: wrap;
+          align-items: center;
           gap: 6px;
         }
         .bk-card-pill {
           font-family: var(--font-body);
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           color: #44403C;
           background: #F5F3F0;
           border-radius: 100px;
-          padding: 3px 10px;
+          padding: 4px 10px;
           border: 1px solid #E8E4DE;
         }
-        .bk-card-dates {
-          display: flex;
+        .bk-card-pill-soft {
+          background: #F5F3F0;
+          color: #57534E;
+          border-color: #E8E4DE;
+        }
+        .bk-card-meta-dates {
+          display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
+          font-family: var(--font-body);
+          font-size: 12px;
+          font-weight: 500;
+          color: #57534E;
+          margin-left: 2px;
+        }
+        .bk-card-meta-dates :global(svg) { color: #A8A29E; }
+
+        .bk-card-divider {
+          height: 1px;
+          background: #F0EDE8;
+          margin: 4px 0 2px;
+        }
+
+        /* Expanded stat grid */
+        .bk-card-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+          padding: 4px 0 6px;
+        }
+        .bk-card-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+        .bk-card-stat-label {
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          color: #A8A29E;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+        }
+        .bk-card-stat-value {
           font-family: var(--font-body);
           font-size: 13px;
-          color: #44403C;
-          line-height: 1.4;
+          font-weight: 600;
+          color: #1C1917;
+          line-height: 1.3;
         }
+        .bk-card-stat-total { align-items: flex-end; text-align: right; }
+        .bk-card-stat-amount {
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 700;
+          letter-spacing: -0.3px;
+          color: #FF385C;
+        }
+
         .bk-card-foot {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
+          justify-content: flex-end;
           gap: 8px;
-          margin-top: auto;
-          padding-top: 10px;
-          border-top: 1px solid #F0EDE8;
-        }
-        .bk-card-total { display: flex; flex-direction: column; }
-        .bk-card-total-label {
-          font-family: var(--font-body);
-          font-size: 11px;
-          color: #A8A29E;
-        }
-        .bk-card-total-value {
-          font-family: var(--font-display);
-          font-size: 18px;
-          font-weight: 700;
-          color: #1C1917;
-          letter-spacing: -0.3px;
-        }
-        .bk-card-actions {
-          display: flex;
-          gap: 8px;
+          padding-top: 4px;
         }
         .bk-btn {
           font-family: var(--font-body);
           font-size: 13px;
           font-weight: 600;
-          padding: 9px 16px;
+          padding: 10px 18px;
           border-radius: 100px;
           cursor: pointer;
           text-decoration: none;
           text-align: center;
-          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
           border: 1.5px solid transparent;
           line-height: 1;
         }
+        .bk-btn:active { transform: scale(0.97); }
         .bk-btn-ghost {
           color: #1C1917;
           background: #fff;
@@ -349,35 +387,48 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
         @media (max-width: 640px) {
           .bk-card {
             flex-direction: column;
-            border-radius: 14px;
+            border-radius: 16px;
           }
           .bk-card-img {
             width: 100%;
-            height: 160px;
+            height: 170px;
           }
           .bk-card-status {
-            top: 10px;
-            left: 10px;
-            font-size: 10px;
-            padding: 3px 8px;
+            top: 12px;
+            left: 12px;
+            font-size: 10.5px;
+            padding: 4px 10px;
           }
           .bk-card-body {
-            padding: 14px 16px 16px;
-            gap: 9px;
+            padding: 14px 16px 18px;
+            gap: 10px;
           }
           .bk-card-title { font-size: 16px; }
-          .bk-card-foot {
-            flex-direction: column;
-            align-items: stretch;
+          .bk-card-meta-dates { font-size: 11.5px; }
+          .bk-card-stats {
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
           }
-          .bk-card-actions {
-            width: 100%;
+          .bk-card-stat-total {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #FFF0F3;
+            border-radius: 10px;
+            margin-top: 2px;
+            text-align: left;
+          }
+          .bk-card-stat-total .bk-card-stat-label { color: #57534E; }
+          .bk-card-foot {
+            flex-direction: row;
+            justify-content: stretch;
+            gap: 8px;
           }
           .bk-btn {
             flex: 1;
             padding: 11px 14px;
-            font-size: 13px;
           }
         }
       `}</style>
@@ -494,9 +545,17 @@ export default function MyBookingsPage() {
           padding-top: 72px;
         }
         .bk-shell {
-          max-width: 860px;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 36px 24px 80px;
+          padding: 36px 32px 80px;
+        }
+        .bk-list {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+        @media (max-width: 900px) {
+          .bk-list { grid-template-columns: 1fr; }
         }
         .bk-back {
           display: inline-flex;

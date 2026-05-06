@@ -203,6 +203,10 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
       toast.error("Please select valid check-in and check-out dates.");
       return;
     }
+    if (stayType === "monthly" && !fromDate) {
+      toast.error("Please select your check-in date.");
+      return;
+    }
     if (!idProofUrl) {
       toast.error("Please upload your ID proof to continue.");
       return;
@@ -235,6 +239,9 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
         nights: stayType === "daily" ? nights : undefined,
         total,
         status: "pending",
+        tenantName: currentUser.name,
+        tenantPhone: currentUser.phone,
+        idProofUrl,
         createdAt: new Date().toISOString(),
       });
     }
@@ -333,27 +340,69 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
             </section>
           )}
 
-          {stayType === "monthly" && (
-            <section className="bk-section">
-              <p className="bk-label">Duration</p>
-              <div className="bk-stepper">
-                <button
-                  onClick={() => setMonths((m) => Math.max(1, m - 1))}
-                  className="bk-stepper-btn"
-                  aria-label="Decrease months"
-                >−</button>
-                <div className="bk-stepper-value">
-                  <span className="bk-stepper-num">{months}</span>
-                  <span className="bk-stepper-unit">month{months !== 1 ? "s" : ""} · ₹{monthlyRate.toLocaleString()}/mo</span>
-                </div>
-                <button
-                  onClick={() => setMonths((m) => Math.min(12, m + 1))}
-                  className="bk-stepper-btn"
-                  aria-label="Increase months"
-                >+</button>
-              </div>
-            </section>
-          )}
+          {stayType === "monthly" && (() => {
+            // Compute auto check-out: fromDate + months months
+            const monthlyEnd = (() => {
+              if (!fromDate) return "";
+              const [y, m, d] = fromDate.split("-").map(Number);
+              const end = new Date(y, m - 1, d);
+              end.setMonth(end.getMonth() + months);
+              const yyyy = end.getFullYear();
+              const mm = String(end.getMonth() + 1).padStart(2, "0");
+              const dd = String(end.getDate()).padStart(2, "0");
+              return `${yyyy}-${mm}-${dd}`;
+            })();
+            return (
+              <>
+                <section className="bk-section">
+                  <p className="bk-label">Select dates</p>
+                  <div className="bk-dates">
+                    <label className="bk-date">
+                      <span className="bk-date-cap">Check-in</span>
+                      <input
+                        type="date"
+                        value={fromDate}
+                        min={today}
+                        onChange={(e) => setFromDate(e.target.value)}
+                      />
+                      <span className="bk-date-hint">First day of stay</span>
+                    </label>
+                    <label className="bk-date">
+                      <span className="bk-date-cap">Check-out</span>
+                      <input
+                        type="date"
+                        value={monthlyEnd}
+                        readOnly
+                        tabIndex={-1}
+                        style={{ cursor: "not-allowed", backgroundColor: "#FAFAF9" }}
+                      />
+                      <span className="bk-date-hint">{months} month{months !== 1 ? "s" : ""} from check-in</span>
+                    </label>
+                  </div>
+                </section>
+
+                <section className="bk-section">
+                  <p className="bk-label">Duration</p>
+                  <div className="bk-stepper">
+                    <button
+                      onClick={() => setMonths((m) => Math.max(1, m - 1))}
+                      className="bk-stepper-btn"
+                      aria-label="Decrease months"
+                    >−</button>
+                    <div className="bk-stepper-value">
+                      <span className="bk-stepper-num">{months}</span>
+                      <span className="bk-stepper-unit">month{months !== 1 ? "s" : ""} · ₹{monthlyRate.toLocaleString()}/mo</span>
+                    </div>
+                    <button
+                      onClick={() => setMonths((m) => Math.min(12, m + 1))}
+                      className="bk-stepper-btn"
+                      aria-label="Increase months"
+                    >+</button>
+                  </div>
+                </section>
+              </>
+            );
+          })()}
 
           <section className="bk-section">
             <p className="bk-label">ID proof</p>
@@ -866,9 +915,10 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
           }
           .bk-sheet-head { padding: 10px 18px 14px; }
           .bk-pgname { font-size: 18px; }
-          .bk-body { padding: 16px 18px 10px; }
-          .bk-foot { padding: 12px 18px calc(16px + env(safe-area-inset-bottom)); }
-          .bk-section { margin-bottom: 18px; }
+          .bk-body { padding: 14px 16px 4px; }
+          .bk-foot { padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); }
+          .bk-section { margin-bottom: 14px; }
+          .bk-summary { padding: 12px 14px; margin-top: 4px; }
           .bk-room { padding: 11px 14px; gap: 10px; }
           .bk-room-price-value { font-size: 15px; }
           .bk-stepper-num { font-size: 28px; }
@@ -986,8 +1036,8 @@ export default function PGDetailPage() {
       </Head>
       <Navbar />
 
-      <main style={{ minHeight: "100vh", backgroundColor: "#F9F7F4", paddingTop: "72px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "28px 24px 80px" }}>
+      <main className="pg-detail-main" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4", paddingTop: "72px" }}>
+        <div className="pg-detail-page" style={{ maxWidth: "1100px", margin: "0 auto", padding: "28px 24px 80px" }}>
 
           {/* Back link */}
           <Link href="/pgs" style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C", textDecoration: "none", marginBottom: "20px" }}>
@@ -1003,9 +1053,9 @@ export default function PGDetailPage() {
               <Gallery photos={pg.photos} name={pg.name} />
 
               {/* Name + meta */}
-              <div style={{ backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #E8E4DE", padding: "24px", marginTop: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" }}>
-                  <div>
+              <div className="pg-detail-name-card" style={{ backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #E8E4DE", padding: "24px", marginTop: "20px" }}>
+                <div className="pg-detail-name-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" }}>
+                  <div className="pg-detail-name-title" style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                       <PGTypeLabel type={pg.pgType} />
                       {pg.isApproved && (
@@ -1023,7 +1073,7 @@ export default function PGDetailPage() {
                       <span style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C" }}>{pg.address}</span>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px", flexShrink: 0 }}>
+                  <div className="pg-detail-name-actions" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px", flexShrink: 0 }}>
                     {/* Share + Wishlist row */}
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button onClick={handleShare}
@@ -1211,6 +1261,74 @@ export default function PGDetailPage() {
       <style>{`
         @media (max-width: 900px) {
           .detail-grid { grid-template-columns: 1fr !important; }
+
+          /* Hard-clip any horizontal overflow on the customer detail page */
+          .pg-detail-main {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+          }
+          .pg-detail-page {
+            padding: 0 !important;
+            max-width: 100vw !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .pg-detail-page img { max-width: 100% !important; }
+
+          /* Back link gets a 14px inset since the page wrapper lost its padding */
+          .pg-detail-page > a:first-of-type {
+            margin-left: 14px !important;
+            margin-right: 14px !important;
+          }
+
+          /* Cards: any white rounded card on this page goes edge-to-edge */
+          .pg-detail-page [style*="border-radius: 16px"] {
+            border-radius: 0 !important;
+            border-left-width: 0 !important;
+            border-right-width: 0 !important;
+          }
+
+          /* Reduce gaps between stacked cards */
+          .pg-detail-page .detail-grid {
+            gap: 0 !important;
+          }
+          .pg-detail-page .detail-grid > div > div[style*="margin-top"] {
+            margin-top: 1px !important;
+          }
+
+          /* Photo gallery main image: smaller */
+          .pg-detail-page [style*="height: 420px"] {
+            height: 260px !important;
+          }
+
+          /* PG name card: stack header vertically so the Directions button doesn't push off-screen */
+          .pg-detail-name-card { padding: 18px 16px !important; }
+          .pg-detail-name-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 14px !important;
+          }
+          .pg-detail-name-actions {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .pg-detail-name-title h1 {
+            font-size: 20px !important;
+            line-height: 1.25 !important;
+          }
+          .pg-detail-name-title span,
+          .pg-detail-name-title h1 {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+          /* Inner card padding tighter */
+          .pg-detail-page [style*="padding: 24px"] {
+            padding: 18px 16px !important;
+          }
         }
         @media (max-width: 640px) {
           .details-grid { grid-template-columns: 1fr !important; }

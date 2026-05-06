@@ -41,6 +41,19 @@ function formatDate(d: string) {
   return new Date(y, m - 1, day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function endDateForBooking(b: StoredBooking): string {
+  if (b.stayType === "monthly" && b.months) {
+    const [y, m, d] = b.fromDate.split("-").map(Number);
+    const end = new Date(y, m - 1, d);
+    end.setMonth(end.getMonth() + b.months);
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, "0");
+    const dd = String(end.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return b.toDate || "";
+}
+
 function IDProofModal({ url, onClose }: { url: string; onClose: () => void }) {
   return (
     <div
@@ -88,63 +101,73 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
       }}
     >
       {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "5px" }}>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: "600", color: "#1C1917" }}>
-            {booking.tenantName || "Guest"}
-          </span>
-          {booking.tenantPhone && (
-            <a href={`tel:${booking.tenantPhone}`} style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: "var(--font-body)", fontSize: "12px", color: "#3B82F6", textDecoration: "none" }}>
-              <HiPhone size={12} /> {booking.tenantPhone}
-            </a>
-          )}
-          <div style={{ display: "flex", alignItems: "center", gap: "5px", backgroundColor: st.bg, borderRadius: "100px", padding: "3px 9px" }}>
+      <div className="o-booking-info" style={{ flex: 1, minWidth: 0 }}>
+        {/* Row 1: Name + phone (left) ↔ Status badge (right) */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "5px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: "700", color: "#1C1917", whiteSpace: "nowrap" }}>
+              {booking.tenantName || "Guest"}
+            </span>
+            {booking.tenantPhone && (
+              <a href={`tel:${booking.tenantPhone}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontFamily: "var(--font-body)", fontSize: "12px", color: "#3B82F6", textDecoration: "none", whiteSpace: "nowrap" }}>
+                <HiPhone size={12} /> {booking.tenantPhone}
+              </a>
+            )}
+          </div>
+          <div className="o-status-badge-mobile" style={{ display: "inline-flex", alignItems: "center", gap: "5px", backgroundColor: st.bg, borderRadius: "100px", padding: "3px 9px", flexShrink: 0 }}>
             <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: st.dot }} />
             <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "600", color: st.color }}>{st.label}</span>
           </div>
         </div>
-        <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#44403C", marginBottom: "3px" }}>
-          <strong>{booking.pgName}</strong> · {SHARING_LABEL[booking.sharing]}
+
+        {/* Row 2: PG name on its own line */}
+        <div style={{ fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "600", color: "#1C1917", marginBottom: "3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {booking.pgName}
         </div>
+
+        {/* Row 3: Sharing type */}
+        <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C", marginBottom: "5px" }}>
+          {SHARING_LABEL[booking.sharing]}
+        </div>
+
+        {/* Row 4: Dates */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C" }}>
           <HiCalendar size={12} />
           {booking.stayType === "monthly"
-            ? `Monthly · ${booking.months} month${booking.months !== 1 ? "s" : ""} from ${formatDate(booking.fromDate)}`
-            : `Daily · ${booking.nights} night${booking.nights !== 1 ? "s" : ""} · ${formatDate(booking.fromDate)} → ${formatDate(booking.toDate || "")}`
+            ? `Monthly · ${formatDate(booking.fromDate)} → ${formatDate(endDateForBooking(booking))} (${booking.months} mo)`
+            : `Daily · ${formatDate(booking.fromDate)} → ${formatDate(booking.toDate || "")} (${booking.nights} night${booking.nights !== 1 ? "s" : ""})`
           }
         </div>
       </div>
 
       {/* Amount + actions */}
       <div className="o-booking-right">
-        <div style={{ textAlign: "right", minWidth: "72px" }}>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "700", color: "#1C1917", letterSpacing: "-0.4px" }}>
+        <div className="o-booking-price" style={{ display: "flex", alignItems: "baseline", gap: "4px", whiteSpace: "nowrap", flexShrink: 0 }}>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "700", color: "#1C1917", letterSpacing: "-0.4px" }}>
             ₹{booking.total.toLocaleString()}
-          </div>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "#78716C" }}>
-            {booking.stayType === "monthly" ? "/ month" : "total"}
-          </div>
+          </span>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "#78716C" }}>
+            {booking.stayType === "monthly" ? "/mo" : "total"}
+          </span>
         </div>
 
-        {(booking.idProofUrl || isPending) && (
-          <div className="o-booking-actions">
-            {booking.idProofUrl && (
-              <button onClick={() => onViewProof(booking.idProofUrl!)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 12px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
-                <HiEye size={13} /> ID
+        <div className="o-booking-actions">
+          {booking.idProofUrl && (
+            <button onClick={() => onViewProof(booking.idProofUrl!)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 12px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
+              <HiEye size={13} /> ID
+            </button>
+          )}
+          {isPending && (
+            <>
+              <button onClick={() => onConfirm(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "700", color: "#065F46", padding: "6px 14px", borderRadius: "100px", border: "1.5px solid #6EE7B7", backgroundColor: "#D1FAE5", cursor: "pointer", whiteSpace: "nowrap" }}>
+                <HiCheckCircle size={13} /> Confirm
               </button>
-            )}
-            {isPending && (
-              <>
-                <button onClick={() => onConfirm(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "700", color: "#065F46", padding: "6px 14px", borderRadius: "100px", border: "1.5px solid #6EE7B7", backgroundColor: "#D1FAE5", cursor: "pointer", whiteSpace: "nowrap" }}>
-                  <HiCheckCircle size={13} /> Confirm
-                </button>
-                <button onClick={() => onReject(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "700", color: "#991B1B", padding: "6px 14px", borderRadius: "100px", border: "1.5px solid #FCA5A5", backgroundColor: "#FEE2E2", cursor: "pointer", whiteSpace: "nowrap" }}>
-                  <HiXCircle size={13} /> Reject
-                </button>
-              </>
-            )}
-          </div>
-        )}
+              <button onClick={() => onReject(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "700", color: "#991B1B", padding: "6px 14px", borderRadius: "100px", border: "1.5px solid #FCA5A5", backgroundColor: "#FEE2E2", cursor: "pointer", whiteSpace: "nowrap" }}>
+                <HiXCircle size={13} /> Reject
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -222,7 +245,7 @@ export default function PGAdminBookings() {
             </div>
           </div>
 
-          <div className="pg-content">
+          <div className="pg-content pg-bookings-page">
 
             {counts.pending > 0 && (
               <div style={{ display: "flex", gap: "10px", alignItems: "center", padding: "12px 16px", backgroundColor: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: "12px", marginBottom: "20px" }}>
@@ -255,7 +278,7 @@ export default function PGAdminBookings() {
 
             {/* Booking list */}
             {filtered.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div className="o-booking-list">
                 {filtered.map((b) => (
                   <BookingRow
                     key={b.objectId}

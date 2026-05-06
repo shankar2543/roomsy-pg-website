@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getAllUsers } from "@/lib/dummyAuth";
 import { getAllBookings } from "@/lib/dummyBookings";
 import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
 import { AdminSidebar } from "./dashboard";
-import { HiUsers, HiSearch, HiOfficeBuilding, HiUser, HiShieldCheck, HiHome } from "react-icons/hi";
+import { HiUsers, HiSearch, HiOfficeBuilding, HiUser, HiShieldCheck, HiHome, HiChevronDown, HiPhone, HiMail, HiChevronRight } from "react-icons/hi";
 import { AppUser } from "@/types/user";
 import { PG } from "@/types/pg";
+
+type PGRef = { objectId: string; name: string };
 
 type Tab = "all" | "customer" | "pg_admin";
 
@@ -39,6 +42,88 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
+function UserRow({ u, idx, pgLabel, pgs }: { u: AppUser; idx: number; pgLabel: string | null; pgs: PGRef[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className={`adm-user-row ${expanded ? "is-expanded" : ""}`} style={{ borderTop: idx === 0 ? "none" : "1px solid #F0EDE8" }}>
+      <div className="adm-user-row-head" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px" }}>
+        <Avatar name={u.name} />
+
+        <div className="adm-user-info" style={{ flex: 1, minWidth: 0 }}>
+          <div className="adm-user-name" style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: "600", color: "#1C1917", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {u.name}
+          </div>
+          <div className="adm-user-email" style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {u.email}
+          </div>
+          {pgLabel && (
+            <div className="adm-user-pg" style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "3px" }}>
+              {u.role === "customer"
+                ? <HiHome size={11} color="#10B981" style={{ flexShrink: 0 }} />
+                : <HiOfficeBuilding size={11} color="#8B5CF6" style={{ flexShrink: 0 }} />
+              }
+              <span style={{
+                fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "600",
+                color: u.role === "customer" ? "#065F46" : "#5B21B6",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {pgLabel}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="adm-user-phone" style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#A8A29E", flexShrink: 0 }}>
+          {u.phone}
+        </div>
+
+        <RoleBadge role={u.role} />
+
+        <button
+          className="adm-user-toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          aria-label={expanded ? "Show less" : "Show more"}
+        >
+          <HiChevronDown size={16} />
+        </button>
+      </div>
+
+      {/* Expanded details — visible on mobile when toggled */}
+      <div className="adm-user-expand">
+        <div className="adm-user-expand-row">
+          <HiMail size={13} color="#A8A29E" />
+          <span>{u.email}</span>
+        </div>
+        <div className="adm-user-expand-row">
+          <HiPhone size={13} color="#A8A29E" />
+          <span>{u.phone}</span>
+        </div>
+        {pgs.length > 0 && (
+          <div className="adm-user-pgs">
+            <div className="adm-user-pgs-label">
+              {u.role === "customer"
+                ? <HiHome size={13} color="#10B981" />
+                : <HiOfficeBuilding size={13} color="#8B5CF6" />
+              }
+              <span>{u.role === "customer" ? "Staying at" : "Owns"}</span>
+            </div>
+            <div className="adm-user-pgs-list">
+              {pgs.map((pg) => (
+                <Link key={pg.objectId} href={`/admin/pgs/${pg.objectId}`} className="adm-user-pg-link">
+                  <span className="adm-user-pg-name">{pg.name}</span>
+                  <span className="adm-user-pg-cta">View details <HiChevronRight size={12} /></span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminUsers() {
   const router = useRouter();
   const { user, hydrated } = useAuthStore();
@@ -55,25 +140,27 @@ export default function AdminUsers() {
     setAllPGs(getAllPGsWithOverrides());
   }, [user, hydrated]);
 
-  // Map: tenantId → active PG names (confirmed/active bookings)
+  // Map: tenantId → active PGs (confirmed/active bookings)
   const tenantPGMap = useMemo(() => {
     const bookings = getAllBookings();
-    const map: Record<string, string[]> = {};
+    const map: Record<string, PGRef[]> = {};
     bookings
       .filter((b) => b.status === "confirmed" || b.status === "pending")
       .forEach((b) => {
         if (!map[b.userId]) map[b.userId] = [];
-        if (!map[b.userId].includes(b.pgName)) map[b.userId].push(b.pgName);
+        if (!map[b.userId].some((p) => p.objectId === b.pgId)) {
+          map[b.userId].push({ objectId: b.pgId, name: b.pgName });
+        }
       });
     return map;
   }, []);
 
-  // Map: ownerId → PG names they own
+  // Map: ownerId → PGs they own
   const ownerPGMap = useMemo(() => {
-    const map: Record<string, string[]> = {};
+    const map: Record<string, PGRef[]> = {};
     allPGs.forEach((pg) => {
       if (!map[pg.owner.objectId]) map[pg.owner.objectId] = [];
-      map[pg.owner.objectId].push(pg.name);
+      map[pg.owner.objectId].push({ objectId: pg.objectId, name: pg.name });
     });
     return map;
   }, [allPGs]);
@@ -174,52 +261,17 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   filtered.map((u, idx) => {
-                    const pgNames = u.role === "customer"
+                    const pgs = u.role === "customer"
                       ? (tenantPGMap[u.objectId] ?? [])
                       : (ownerPGMap[u.objectId] ?? []);
+                    const names = pgs.map((p) => p.name);
 
                     const pgLabel = u.role === "customer"
-                      ? (pgNames.length === 0 ? null : pgNames.length === 1 ? `Staying at ${pgNames[0]}` : `Staying at ${pgNames[0]} +${pgNames.length - 1} more`)
-                      : (pgNames.length === 0 ? null : pgNames.length <= 2 ? pgNames.join(", ") : `${pgNames.slice(0, 2).join(", ")} +${pgNames.length - 2} more`);
+                      ? (names.length === 0 ? null : names.length === 1 ? `Staying at ${names[0]}` : `Staying at ${names[0]} +${names.length - 1} more`)
+                      : (names.length === 0 ? null : names.length <= 2 ? names.join(", ") : `${names.slice(0, 2).join(", ")} +${names.length - 2} more`);
 
                     return (
-                      <div key={u.objectId} style={{
-                        display: "flex", alignItems: "center", gap: "14px",
-                        padding: "13px 16px",
-                        borderTop: idx === 0 ? "none" : "1px solid #F0EDE8",
-                      }}>
-                        <Avatar name={u.name} />
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: "600", color: "#1C1917", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {u.name}
-                          </div>
-                          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {u.email}
-                          </div>
-                          {pgLabel && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "3px" }}>
-                              {u.role === "customer"
-                                ? <HiHome size={11} color="#10B981" />
-                                : <HiOfficeBuilding size={11} color="#8B5CF6" />
-                              }
-                              <span style={{
-                                fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "600",
-                                color: u.role === "customer" ? "#065F46" : "#5B21B6",
-                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                              }}>
-                                {pgLabel}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#A8A29E", flexShrink: 0 }}>
-                          {u.phone}
-                        </div>
-
-                        <RoleBadge role={u.role} />
-                      </div>
+                      <UserRow key={u.objectId} u={u as AppUser} idx={idx} pgLabel={pgLabel} pgs={pgs} />
                     );
                   })
                 )}
@@ -240,9 +292,117 @@ export default function AdminUsers() {
           border-right: none !important;
           border-radius: 0 !important;
         }
+
+        /* User-row toggle: hidden on desktop, shown on mobile */
+        .adm-user-toggle {
+          display: none;
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          border: 1px solid #E8E4DE;
+          background: #fff;
+          color: #44403C;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          flex-shrink: 0;
+          transition: background 0.15s, transform 0.2s;
+        }
+        .adm-user-toggle:hover { background: #F9F7F4; }
+        .adm-user-row.is-expanded .adm-user-toggle :global(svg) { transform: rotate(180deg); }
+        .adm-user-toggle :global(svg) { transition: transform 0.2s; }
+
+        /* Expanded panel: hidden by default; CSS toggles it open per breakpoint */
+        .adm-user-expand { display: none; }
+
         @media (max-width: 768px) {
           .dash-hero-bar { padding: calc(76px + env(safe-area-inset-top)) 16px 14px; }
+
+          /* show the toggle on mobile, hide details that should sit behind it */
+          .adm-user-toggle { display: inline-flex; }
+          .adm-user-email,
+          .adm-user-pg,
+          .adm-user-phone {
+            display: none !important;
+          }
+          .adm-user-row.is-expanded .adm-user-expand {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 16px 14px;
+            margin-top: -4px;
+          }
+          .adm-user-row.is-expanded .adm-user-expand-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-body);
+            font-size: 12.5px;
+            color: #44403C;
+            line-height: 1.45;
+            word-break: break-word;
+          }
+          .adm-user-row.is-expanded .adm-user-expand-row svg { flex-shrink: 0; }
+
+          .adm-user-row.is-expanded .adm-user-pgs {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .adm-user-pgs-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-body);
+            font-size: 11px;
+            font-weight: 700;
+            color: #78716C;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+          }
+          .adm-user-pgs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .adm-user-pg-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid #E8E4DE;
+            border-radius: 10px;
+            background: #FAFAF9;
+            text-decoration: none;
+            transition: background 0.15s, border-color 0.15s;
+          }
+          .adm-user-pg-link:active { background: #F0EDE8; }
+          .adm-user-pg-name {
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 600;
+            color: #1C1917;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+            flex: 1;
+          }
+          .adm-user-pg-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 600;
+            color: #FF385C;
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
         }
+        /* Desktop: keep PGs hidden in the expand row (they're shown in the inline pgLabel pill). */
+        .adm-user-pgs { display: none; }
         @media (max-width: 640px) {
           .pg-content { padding: 0 0 calc(86px + env(safe-area-inset-bottom)) !important; }
           .adm-summary { padding: 12px 12px 0; margin-bottom: 12px; }

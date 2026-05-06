@@ -1146,21 +1146,65 @@ h1, h2, h3 {
 .o-filter-tab-count.is-active { background: #FF385C; color: #fff; }
 .o-booking-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 88px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
 }
 .o-booking-right {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
 }
 .o-booking-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
+  flex-wrap: nowrap;
 }
+.o-booking-actions::-webkit-scrollbar { display: none; }
+
+/* Status badge always shows in the header row */
+.o-status-badge-mobile { display: inline-flex; }
+
+/* Owner bookings page (/pg-admin/bookings): fill the screen width on desktop */
+.o-booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 901px) {
+  .pg-bookings-page {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 28px 32px 80px !important;
+  }
+  .o-booking-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Desktop only: make the badge match the ID button's size */
+@media (min-width: 901px) {
+  .o-status-badge-mobile {
+    padding: 6px 12px !important;
+    border-radius: 100px !important;
+    border: 1.5px solid transparent !important;
+    margin-top: 5px !important;
+  }
+  .o-status-badge-mobile > span {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+  .o-status-badge-mobile > div:first-child {
+    width: 6px !important;
+    height: 6px !important;
+  }
+}
+
 .o-card-inner {
   display: flex;
   align-items: flex-start;
@@ -1273,6 +1317,31 @@ h1, h2, h3 {
   }
 }
 
+@media (max-width: 900px) {
+  /* Booking rows: stack vertically; price + actions on a shared row */
+  .o-booking-row {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: unset;
+    gap: 10px;
+  }
+  .o-booking-right {
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+  .o-booking-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .o-booking-actions::-webkit-scrollbar { display: none; }
+}
+
 @media (max-width: 640px) {
   .o-filter-tabs {
     gap: 6px;
@@ -1287,27 +1356,7 @@ h1, h2, h3 {
   .o-filter-tab-label { font-size: 11px; }
   .o-filter-tab-count { font-size: 10px; padding: 0 5px; min-width: 16px; }
 
-  /* Booking rows: stack vertically */
-  .o-booking-row {
-    flex-direction: column;
-    align-items: stretch;
-    min-height: unset;
-    gap: 10px;
-  }
-  /* Amount above action buttons */
-  .o-booking-right {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 8px;
-  }
-  .o-booking-actions {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    width: 100%;
-  }
-  .o-booking-actions::-webkit-scrollbar { display: none; }
+  /* moved to (max-width: 900px) below */
 
   /* Resident / pending cards: stack vertically */
   .o-card-inner {

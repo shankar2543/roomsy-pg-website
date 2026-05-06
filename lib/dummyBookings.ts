@@ -27,26 +27,7 @@ export interface StoredBooking {
 const STORAGE_KEY = "roomsy_bookings";
 
 const SEED_BOOKINGS: StoredBooking[] = [
-  // Ravi Landlord (seed_3) owns: pg_001, pg_003, pg_005, pg_007, pg_009
-  {
-    objectId: "bk_seed_1",
-    userId: "seed_1",
-    pgOwnerId: "seed_3",
-    pgId: "pg_001",
-    pgName: "Hitech Heights PG",
-    pgArea: "Hitech City",
-    pgPhoto: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-    sharing: "single",
-    stayType: "monthly",
-    fromDate: "2026-04-01",
-    months: 3,
-    total: 28500,
-    status: "confirmed",
-    tenantName: "Arjun Sharma",
-    tenantPhone: "9876543210",
-    idProofUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
-    createdAt: "2026-03-25T10:30:00.000Z",
-  },
+  // Ravi Landlord (seed_3) owns: pg_003, pg_005, pg_007, pg_009
   {
     objectId: "bk_seed_2",
     userId: "seed_1",
@@ -85,25 +66,6 @@ const SEED_BOOKINGS: StoredBooking[] = [
     tenantPhone: "9123456780",
     idProofUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
     createdAt: "2026-04-28T09:15:00.000Z",
-  },
-  {
-    objectId: "bk_seed_4",
-    userId: "seed_2",
-    pgOwnerId: "seed_3",
-    pgId: "pg_001",
-    pgName: "Hitech Heights PG",
-    pgArea: "Hitech City",
-    pgPhoto: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-    sharing: "double",
-    stayType: "monthly",
-    fromDate: "2026-05-01",
-    months: 1,
-    total: 7000,
-    status: "pending",
-    tenantName: "Priya Nair",
-    tenantPhone: "9123456780",
-    idProofUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
-    createdAt: "2026-04-29T11:00:00.000Z",
   },
   {
     objectId: "bk_seed_5",
@@ -237,11 +199,19 @@ export function getBookingsForUser(userId: string): StoredBooking[] {
 }
 
 export function getBookingsForOwner(ownerId: string): StoredBooking[] {
+  // Match on pgOwnerId (set at booking creation), with a fallback that also resolves
+  // bookings whose pgId belongs to one of the owner's PGs — covers any legacy
+  // booking row where pgOwnerId might be missing.
   const ownerPgIds = new Set(
-    DUMMY_PGS.filter((pg) => pg.owner.objectId === ownerId).map((pg) => pg.objectId)
+    [...DUMMY_PGS, ...(typeof window !== "undefined"
+      ? (JSON.parse(localStorage.getItem("roomsy_created_pgs") || "[]") as { objectId: string; owner: { objectId: string } }[])
+      : []
+    )]
+      .filter((pg) => pg.owner.objectId === ownerId)
+      .map((pg) => pg.objectId)
   );
   return getAllBookings()
-    .filter((b) => ownerPgIds.has(b.pgId))
+    .filter((b) => b.pgOwnerId === ownerId || ownerPgIds.has(b.pgId))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 

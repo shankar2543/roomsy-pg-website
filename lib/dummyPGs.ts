@@ -4,28 +4,6 @@ export const ACTIVE_CITY = "Hyderabad";
 
 export const DUMMY_PGS: PG[] = [
   {
-    objectId: "pg_001",
-    name: "Hitech Heights PG",
-    description: "Modern PG for working professionals near Hitech City metro. Fully furnished with all amenities.",
-    city: "Hyderabad", area: "Hitech City",
-    address: "Plot 12, Phase 2, Hitech City, Hyderabad",
-    pgType: "boys", occupancy: ["single", "double"], food: "all", parking: "bike",
-    location: { latitude: 17.4484, longitude: 78.3908 },
-    photos: [
-      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-      "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&q=80",
-      "https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=800&q=80",
-    ],
-    amenities: ["WiFi", "AC", "Meals", "Laundry", "Gym", "CCTV"],
-    owner: { objectId: "seed_3", name: "Ravi Landlord", phone: "9000000001" },
-    isApproved: true, isSuspended: false, rating: 4.7, availableBeds: 4, monthlyPrice: 9500,
-    sharingPrices: { single: 9500, double: 7000 },
-    dailyPrices:   { single: 550,  double: 400 },
-  },
-  {
     objectId: "pg_002",
     name: "Madhapur Comfort Stay",
     description: "Spacious rooms with homely meals. Walking distance to Mindspace and Cyber Towers.",
