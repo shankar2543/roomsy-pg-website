@@ -223,6 +223,7 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
         objectId: `bk_${Date.now()}`,
         userId: currentUser.objectId,
         pgId: pg.objectId,
+        pgOwnerId: pg.owner.objectId,
         pgName: pg.name,
         pgArea: pg.area,
         pgPhoto: pg.photos[0] || "",
