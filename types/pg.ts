@@ -11,6 +11,7 @@ export interface PG {
   city: string;
   area: string;
   address: string;
+  pincode?: string;
   pgType: PGType;
   occupancy: Occupancy[];
   food: FoodOption;

@@ -7,7 +7,7 @@ import { createPG, type PGDraft } from "@/lib/dummyPGAdmin";
 import { uploadPGPhoto } from "@/lib/cloudinary";
 import { PGType, FoodOption, Parking, Occupancy } from "@/types/pg";
 import { Sidebar } from "../dashboard";
-import { HiArrowLeft, HiTrash, HiUpload, HiPhotograph } from "react-icons/hi";
+import { HiArrowLeft, HiTrash, HiUpload, HiPhotograph, HiLocationMarker } from "react-icons/hi";
 import toast from "react-hot-toast";
 
 const ALL_AMENITIES = [
@@ -22,6 +22,7 @@ type FormState = {
   city: string;
   area: string;
   address: string;
+  pincode: string;
   pgType: PGType;
   occupancy: Set<Occupancy>;
   food: FoodOption;
@@ -40,7 +41,7 @@ type FormState = {
 };
 
 const INITIAL: FormState = {
-  name: "", description: "", city: "Hyderabad", area: "", address: "",
+  name: "", description: "", city: "Hyderabad", area: "", address: "", pincode: "",
   pgType: "boys", occupancy: new Set(["double"]), food: "none", parking: "none",
   latitude: "", longitude: "", availableBeds: "",
   singlePrice: "", doublePrice: "", triplePrice: "",
@@ -54,6 +55,7 @@ export default function NewPGPage() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -111,6 +113,34 @@ export default function NewPGPage() {
     setForm((f) => ({ ...f, photos: f.photos.filter((p) => p !== url) }));
   }
 
+  function useMyLocation() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Your browser doesn't support geolocation.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+        toast.success("Location captured.");
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location permission denied. Enter coordinates manually.");
+        } else {
+          toast.error("Couldn't get your location. Try again or enter manually.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
@@ -119,6 +149,7 @@ export default function NewPGPage() {
     if (!form.name.trim()) return toast.error("PG name is required");
     if (!form.area.trim()) return toast.error("Area is required");
     if (!form.address.trim()) return toast.error("Address is required");
+    if (!/^\d{6}$/.test(form.pincode.trim())) return toast.error("Pincode must be a 6-digit number");
     if (form.occupancy.size === 0) return toast.error("Select at least one occupancy type");
     if (form.photos.length === 0) return toast.error("Upload at least one photo");
 
@@ -144,6 +175,7 @@ export default function NewPGPage() {
       city: form.city.trim() || "Hyderabad",
       area: form.area.trim(),
       address: form.address.trim(),
+      pincode: form.pincode.trim(),
       pgType: form.pgType,
       occupancy: Array.from(form.occupancy),
       food: form.food,
@@ -211,6 +243,16 @@ export default function NewPGPage() {
                   <Field label="Area / Locality" required>
                     <input className="o-input" value={form.area} onChange={(e) => set("area", e.target.value)} placeholder="Madhapur" />
                   </Field>
+                  <Field label="Pincode" required>
+                    <input
+                      className="o-input"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={form.pincode}
+                      onChange={(e) => set("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="500081"
+                    />
+                  </Field>
                 </Row>
                 <Field label="Full address" required>
                   <input className="o-input" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Plot 12, Road 5, …" />
@@ -257,7 +299,24 @@ export default function NewPGPage() {
               </Section>
 
               {/* Location */}
-              <Section title="Location coordinates" hint="Find lat/long from Google Maps: right-click your PG on the map → first row is lat, longitude.">
+              <Section title="Location coordinates" hint="Use the button to capture your current position, or paste lat/long from Google Maps (right-click on the map → first row).">
+                <button
+                  type="button"
+                  onClick={useMyLocation}
+                  disabled={locating}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    padding: "10px 16px", borderRadius: "100px",
+                    border: "1px solid #FF385C",
+                    backgroundColor: locating ? "#FFE5EC" : "#FFF0F3",
+                    color: "#FF385C",
+                    fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600",
+                    cursor: locating ? "default" : "pointer",
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <HiLocationMarker size={14} /> {locating ? "Locating…" : "Use my current location"}
+                </button>
                 <Row>
                   <Field label="Latitude" required>
                     <input className="o-input" type="number" step="any" value={form.latitude} onChange={(e) => set("latitude", e.target.value)} placeholder="17.4448" />

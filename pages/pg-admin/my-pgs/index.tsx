@@ -59,13 +59,18 @@ export default function MyPGsPage() {
             </div>
             <Link
               href="/pg-admin/my-pgs/new"
+              className="add-pg-cta"
               style={{
                 display: "inline-flex", alignItems: "center", gap: "6px",
                 padding: "10px 18px", borderRadius: "100px",
-                backgroundColor: "#FF385C", color: "#fff",
+                backgroundColor: "#fff", color: "#FF385C",
                 fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600",
                 textDecoration: "none", marginLeft: "auto", whiteSpace: "nowrap",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                transition: "transform 0.15s, box-shadow 0.15s",
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.12)"; }}
             >
               <HiPlus size={14} /> Add PG
             </Link>

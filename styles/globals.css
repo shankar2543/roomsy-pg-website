@@ -895,6 +895,15 @@ h1, h2, h3 {
     padding: calc(76px + env(safe-area-inset-top)) 16px 22px;
   }
   .dash-hero-avatar { display: none; }
+  .add-pg-cta {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    gap: 4px !important;
+  }
+  .add-pg-cta > svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
