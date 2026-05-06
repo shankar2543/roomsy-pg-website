@@ -6,7 +6,7 @@ import Image from "next/image";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { PGDetailSkeleton, useInitialLoading } from "@/components/common/Skeleton";
-import { DUMMY_PGS } from "@/lib/dummyPGs";
+import { getPGWithOverrides } from "@/lib/dummyPGAdmin";
 import { saveBooking } from "@/lib/dummyBookings";
 import { isWishlisted, toggleWishlist } from "@/lib/dummyWishlist";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -921,7 +921,7 @@ export default function PGDetailPage() {
   const [bookingSharing, setBookingSharing] = useState<SharingKey | undefined>();
   const isLoadingDetail = useInitialLoading(500);
 
-  const pg: PG | undefined = DUMMY_PGS.find((p) => p.objectId === id);
+  const pg: PG | undefined = getPGWithOverrides(id) ?? undefined;
 
   useEffect(() => {
     if (router.isReady && router.query.book === "true") {

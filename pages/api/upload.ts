@@ -3,11 +3,18 @@ import crypto from "crypto";
 
 export const config = { api: { bodyParser: { sizeLimit: "10mb" } } };
 
+const ALLOWED_FOLDERS = ["id-proofs", "pg-photos"] as const;
+type AllowedFolder = (typeof ALLOWED_FOLDERS)[number];
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const { data, filename } = req.body as { data: string; filename?: string };
+  const { data, folder: rawFolder } = req.body as { data: string; folder?: string };
   if (!data) return res.status(400).json({ error: "No file data provided" });
+
+  const folder: AllowedFolder = ALLOWED_FOLDERS.includes(rawFolder as AllowedFolder)
+    ? (rawFolder as AllowedFolder)
+    : "id-proofs";
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -18,7 +25,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const timestamp = Math.round(Date.now() / 1000);
-  const folder = "id-proofs";
   const signature = crypto
     .createHash("sha1")
     .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)

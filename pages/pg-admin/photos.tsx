@@ -4,19 +4,11 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getPGsForOwner, addPGPhoto, removePGPhoto, getPGWithOverrides } from "@/lib/dummyPGAdmin";
+import { uploadPGPhoto } from "@/lib/cloudinary";
 import { PG } from "@/types/pg";
 import { Sidebar } from "./dashboard";
 import { HiPlus, HiTrash, HiPhotograph, HiUpload, HiArrowLeft } from "react-icons/hi";
 import toast from "react-hot-toast";
-
-async function uploadToCloudinary(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: formData });
-  if (!res.ok) throw new Error("Upload failed");
-  const data = await res.json();
-  return data.url as string;
-}
 
 function PhotoGrid({ pg, onRefresh }: { pg: PG; onRefresh: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -38,7 +30,7 @@ function PhotoGrid({ pg, onRefresh }: { pg: PG; onRefresh: () => void }) {
 
     setUploading(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadPGPhoto(file);
       addPGPhoto(pg.objectId, url);
       onRefresh();
       toast.success("Photo uploaded!");

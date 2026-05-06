@@ -7,6 +7,7 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { PGCardSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { filterPGs, ACTIVE_CITY } from "@/lib/dummyPGs";
+import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
 import { PG } from "@/types/pg";
 import {
   HiX, HiLocationMarker, HiStar, HiHeart, HiOutlineHeart,
@@ -402,7 +403,7 @@ export default function PGsPage() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const base = filterPGs({ area: areaInput, occupancy });
+    const base = filterPGs({ area: areaInput, occupancy }, getAllPGsWithOverrides());
 
     const afterPrice = maxPrice < MAX_PRICE_MAX
       ? base.filter((pg) => pg.monthlyPrice <= maxPrice)

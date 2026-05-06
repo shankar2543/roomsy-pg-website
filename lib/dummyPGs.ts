@@ -202,8 +202,8 @@ type FilterQuery = {
   parking?: string[];
 };
 
-export function filterPGs(query: FilterQuery): PG[] {
-  let results = DUMMY_PGS.filter((pg) => pg.isApproved && !pg.isSuspended);
+export function filterPGs(query: FilterQuery, source: PG[] = DUMMY_PGS): PG[] {
+  let results = source.filter((pg) => pg.isApproved && !pg.isSuspended);
 
   if (query.nameSearch) {
     const term = query.nameSearch.toLowerCase();
