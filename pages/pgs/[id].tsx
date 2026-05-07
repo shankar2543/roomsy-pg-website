@@ -8,7 +8,7 @@ import Footer from "@/components/common/Footer";
 import { PGDetailSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { getPGById } from "@/lib/pgService";
 import { createBooking } from "@/lib/bookingService";
-import { isWishlisted, toggleWishlist } from "@/lib/dummyWishlist";
+import { isWishlisted, toggleWishlist, loadWishlist } from "@/lib/wishlistService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { PG } from "@/types/pg";
 import {
@@ -942,21 +942,25 @@ export default function PGDetailPage() {
   useEffect(() => {
     if (!user || !id) { setLiked(false); return; }
     const sync = () => setLiked(isWishlisted(user.objectId, id));
-    sync();
+    loadWishlist(user.objectId).then(sync).catch(() => {});
     window.addEventListener("roomsy:wishlist", sync);
     return () => window.removeEventListener("roomsy:wishlist", sync);
   }, [user, id]);
 
-  function handleToggleWishlist() {
+  async function handleToggleWishlist() {
     if (!user) {
       toast.error("Please log in to save properties");
       router.push("/auth/login");
       return;
     }
     if (!id) return;
-    const nowLiked = toggleWishlist(user.objectId, id);
-    setLiked(nowLiked);
-    toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    try {
+      const nowLiked = await toggleWishlist(user.objectId, id);
+      setLiked(nowLiked);
+      toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update wishlist");
+    }
   }
 
   function handleShare() {

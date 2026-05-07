@@ -310,6 +310,47 @@ Parse.Cloud.define("updatePGAmenities", async (request) => {
   return { ok: true };
 });
 
+// ─── Wishlist ────────────────────────────────────────────────────────────────
+// Single Wishlist row per user, stored as { user, pgIds: [] }.
+
+async function getOrCreateWishlist(user) {
+  const q = new Parse.Query("Wishlist");
+  q.equalTo("user", user);
+  let w = await q.first({ useMasterKey: true });
+  if (w) return w;
+  const Wishlist = Parse.Object.extend("Wishlist");
+  w = new Wishlist();
+  w.set("user", user);
+  w.set("pgIds", []);
+  const acl = new Parse.ACL();
+  acl.setPublicReadAccess(false);
+  acl.setPublicWriteAccess(false);
+  acl.setReadAccess(user.id, true);
+  acl.setWriteAccess(user.id, false); // writes go through Cloud Functions
+  w.setACL(acl);
+  await w.save(null, { useMasterKey: true });
+  return w;
+}
+
+Parse.Cloud.define("getMyWishlist", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const w = await getOrCreateWishlist(request.user);
+  return { pgIds: w.get("pgIds") || [] };
+});
+
+Parse.Cloud.define("toggleWishlist", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const pgId = request.params && request.params.pgId;
+  if (!pgId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "pgId is required");
+  const w = await getOrCreateWishlist(request.user);
+  const current = w.get("pgIds") || [];
+  const exists = current.includes(pgId);
+  const next = exists ? current.filter((id) => id !== pgId) : [...current, pgId];
+  w.set("pgIds", next);
+  await w.save(null, { useMasterKey: true });
+  return { pgIds: next, added: !exists };
+});
+
 // ─── Booking lifecycle ───────────────────────────────────────────────────────
 
 async function fetchBookingOrThrow(bookingId) {

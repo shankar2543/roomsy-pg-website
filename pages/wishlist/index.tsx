@@ -6,8 +6,8 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import PGCard from "@/components/common/PGCard";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
-import { getWishlist } from "@/lib/dummyWishlist";
+import { listAllPGs } from "@/lib/pgService";
+import { loadWishlist } from "@/lib/wishlistService";
 import { PG } from "@/types/pg";
 import { HiArrowLeft, HiOutlineHeart } from "react-icons/hi";
 
@@ -27,15 +27,28 @@ export default function WishlistPage() {
   useEffect(() => {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
-    const refresh = () => {
-      const ids = new Set(getWishlist(user.objectId));
-      setPgs(getAllPGsWithOverrides().filter((pg) => ids.has(pg.objectId)));
-      setReady(true);
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const [ids, allPGs] = await Promise.all([
+          loadWishlist(user.objectId),
+          listAllPGs(),
+        ]);
+        if (cancelled) return;
+        const idSet = new Set(ids);
+        setPgs(allPGs.filter((pg) => idSet.has(pg.objectId)));
+        setReady(true);
+      } catch {
+        if (!cancelled) setReady(true);
+      }
     };
     refresh();
     window.addEventListener("roomsy:wishlist", refresh);
-    return () => window.removeEventListener("roomsy:wishlist", refresh);
-  }, [user]);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("roomsy:wishlist", refresh);
+    };
+  }, [user, hydrated]);
 
   if (!user) return null;
 

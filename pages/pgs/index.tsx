@@ -20,7 +20,7 @@ import {
   MdAcUnit, MdLocalParking, MdBusiness,
 } from "react-icons/md";
 import { useAuthStore } from "@/store/useAuthStore";
-import { isWishlisted, toggleWishlist } from "@/lib/dummyWishlist";
+import { isWishlisted, toggleWishlist, loadWishlist } from "@/lib/wishlistService";
 
 const NON_ACTIVE_CITIES = ["Bangalore", "Mumbai", "Delhi", "Pune", "Chennai"];
 
@@ -92,7 +92,7 @@ function PGListCard({ pg }: { pg: PG }) {
   useEffect(() => {
     if (!user) { setLiked(false); return; }
     const sync = () => setLiked(isWishlisted(user.objectId, pg.objectId));
-    sync();
+    loadWishlist(user.objectId).then(sync).catch(() => {});
     window.addEventListener("roomsy:wishlist", sync);
     return () => window.removeEventListener("roomsy:wishlist", sync);
   }, [user, pg.objectId]);
@@ -106,15 +106,19 @@ function PGListCard({ pg }: { pg: PG }) {
     action();
   }
 
-  function handleToggleWishlist() {
+  async function handleToggleWishlist() {
     if (!user) {
       toast.error("Please log in to save properties");
       router.push("/auth/login");
       return;
     }
-    const nowLiked = toggleWishlist(user.objectId, pg.objectId);
-    setLiked(nowLiked);
-    toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    try {
+      const nowLiked = await toggleWishlist(user.objectId, pg.objectId);
+      setLiked(nowLiked);
+      toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update wishlist");
+    }
   }
 
   // Pick the cheapest sharing option to surface when the card is collapsed

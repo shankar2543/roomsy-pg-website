@@ -6,7 +6,7 @@ import { HiStar, HiHeart, HiOutlineHeart, HiLocationMarker } from "react-icons/h
 import toast from "react-hot-toast";
 import { PG } from "@/types/pg";
 import { useAuthStore } from "@/store/useAuthStore";
-import { isWishlisted, toggleWishlist } from "@/lib/dummyWishlist";
+import { isWishlisted, toggleWishlist, loadWishlist } from "@/lib/wishlistService";
 
 interface PGCardProps {
   pg: PG;
@@ -22,12 +22,12 @@ export default function PGCard({ pg, fromPrice }: PGCardProps) {
   useEffect(() => {
     if (!user) { setLiked(false); return; }
     const sync = () => setLiked(isWishlisted(user.objectId, pg.objectId));
-    sync();
+    loadWishlist(user.objectId).then(sync).catch(() => {});
     window.addEventListener("roomsy:wishlist", sync);
     return () => window.removeEventListener("roomsy:wishlist", sync);
   }, [user, pg.objectId]);
 
-  function handleToggle(e: React.MouseEvent) {
+  async function handleToggle(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
@@ -35,9 +35,13 @@ export default function PGCard({ pg, fromPrice }: PGCardProps) {
       router.push("/auth/login");
       return;
     }
-    const nowLiked = toggleWishlist(user.objectId, pg.objectId);
-    setLiked(nowLiked);
-    toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    try {
+      const nowLiked = await toggleWishlist(user.objectId, pg.objectId);
+      setLiked(nowLiked);
+      toast.success(nowLiked ? "Saved to wishlist" : "Removed from wishlist");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update wishlist");
+    }
   }
 
   const photo = !imgError && pg.photos?.[0] ? pg.photos[0] : null;
