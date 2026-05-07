@@ -94,7 +94,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         {mounted ? <Component {...pageProps} /> : null}
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             style: {
               fontFamily: "var(--font-body)",
