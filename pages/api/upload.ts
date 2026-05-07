@@ -24,10 +24,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: "Cloudinary credentials not configured" });
   }
 
+  // ID proofs are uploaded with type=authenticated so the underlying asset
+  // isn't publicly addressable. Display sites fetch a short-signed URL via
+  // the getSignedIdProofUrl Cloud Function. PG photos remain public uploads.
+  const useAuthenticated = folder === "id-proofs";
   const timestamp = Math.round(Date.now() / 1000);
+
+  // Signature must hash params alphabetically.
+  const signedParams: Record<string, string> = {
+    folder,
+    timestamp: String(timestamp),
+  };
+  if (useAuthenticated) signedParams.type = "authenticated";
+
+  const sigPayload = Object.keys(signedParams)
+    .sort()
+    .map((k) => `${k}=${signedParams[k]}`)
+    .join("&");
+
   const signature = crypto
     .createHash("sha1")
-    .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+    .update(sigPayload + apiSecret)
     .digest("hex");
 
   const body = new FormData();
@@ -36,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   body.append("timestamp", String(timestamp));
   body.append("signature", signature);
   body.append("folder", folder);
+  if (useAuthenticated) body.append("type", "authenticated");
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

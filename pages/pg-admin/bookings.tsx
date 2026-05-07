@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForOwner, confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin, StoredBooking } from "@/lib/bookingService";
+import { getBookingsForOwner, confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin, getSignedIdProofUrl, StoredBooking } from "@/lib/bookingService";
 import { Sidebar } from "./dashboard";
 import {
   HiCalendar, HiPhone, HiX, HiCheckCircle, HiXCircle, HiEye,
@@ -84,7 +84,7 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
   booking: StoredBooking;
   onConfirm: (id: string) => void;
   onReject: (id: string) => void;
-  onViewProof: (url: string) => void;
+  onViewProof: (bookingId: string) => void;
 }) {
   const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
   const isPending = booking.status === "pending";
@@ -153,7 +153,7 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
 
         <div className="o-booking-actions">
           {booking.idProofUrl && (
-            <button onClick={() => onViewProof(booking.idProofUrl!)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 12px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button onClick={() => onViewProof(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 12px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
               <HiEye size={13} /> ID
             </button>
           )}
@@ -179,6 +179,16 @@ export default function PGAdminBookings() {
   const [bookings, setBookings] = useState<StoredBooking[]>([]);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [proofUrl, setProofUrl] = useState<string | null>(null);
+
+  async function handleViewProof(bookingId: string) {
+    try {
+      const url = await getSignedIdProofUrl(bookingId);
+      if (url) setProofUrl(url);
+      else toast.error("ID proof not available.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load ID proof");
+    }
+  }
 
   useEffect(() => {
     if (!hydrated) return;
@@ -295,7 +305,7 @@ export default function PGAdminBookings() {
                     booking={b}
                     onConfirm={handleConfirm}
                     onReject={handleReject}
-                    onViewProof={setProofUrl}
+                    onViewProof={handleViewProof}
                   />
                 ))}
               </div>

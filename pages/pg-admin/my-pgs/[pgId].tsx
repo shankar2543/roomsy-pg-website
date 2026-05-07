@@ -8,7 +8,7 @@ import { getPGById } from "@/lib/pgService";
 import {
   getBookingsForPG, vacateBooking, deleteBooking, updateBooking,
   confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin,
-  getBookingEndDate, StoredBooking,
+  getBookingEndDate, getSignedIdProofUrl, StoredBooking,
 } from "@/lib/bookingService";
 import { PG } from "@/types/pg";
 import { Sidebar } from "../dashboard";
@@ -149,7 +149,7 @@ function ResidentCard({ booking, onVacate, onDelete, onEdit, onViewProof }: {
   onVacate: (id: string) => void;
   onDelete: (b: StoredBooking) => void;
   onEdit: (b: StoredBooking) => void;
-  onViewProof: (url: string) => void;
+  onViewProof: (bookingId: string) => void;
 }) {
   const days = daysRemaining(booking);
   const endDate = getBookingEndDate(booking);
@@ -217,7 +217,7 @@ function ResidentCard({ booking, onVacate, onDelete, onEdit, onViewProof }: {
           </div>
           <div className="o-card-actions">
             {booking.idProofUrl && (
-              <button onClick={() => onViewProof(booking.idProofUrl!)} title="View ID" className="o-icon-btn" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "50%", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", flexShrink: 0 }}>
+              <button onClick={() => onViewProof(booking.objectId)} title="View ID" className="o-icon-btn" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "50%", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", flexShrink: 0 }}>
                 <HiEye size={15} color="#3B82F6" />
               </button>
             )}
@@ -241,7 +241,7 @@ function PendingCard({ booking, onConfirm, onReject, onViewProof }: {
   booking: StoredBooking;
   onConfirm: (id: string) => void;
   onReject: (id: string) => void;
-  onViewProof: (url: string) => void;
+  onViewProof: (bookingId: string) => void;
 }) {
   return (
     <div style={{ backgroundColor: "#fff", border: "1px solid #FDE68A", borderRadius: "14px", padding: "16px 20px", overflow: "hidden", boxShadow: "0 0 0 3px rgba(245,158,11,0.07)" }}>
@@ -276,7 +276,7 @@ function PendingCard({ booking, onConfirm, onReject, onViewProof }: {
           </div>
           <div className="o-card-actions">
             {booking.idProofUrl && (
-              <button onClick={() => onViewProof(booking.idProofUrl!)} style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 11px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
+              <button onClick={() => onViewProof(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 11px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
                 <HiEye size={12} /> ID
               </button>
             )}
@@ -341,6 +341,16 @@ export default function PGDetailPage() {
   const [bookings, setBookings] = useState<StoredBooking[]>([]);
   const [tab, setTab] = useState<Tab>("residents");
   const [proofUrl, setProofUrl] = useState<string | null>(null);
+
+  async function handleViewProof(bookingId: string) {
+    try {
+      const url = await getSignedIdProofUrl(bookingId);
+      if (url) setProofUrl(url);
+      else toast.error("ID proof not available.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load ID proof");
+    }
+  }
   const [deleteTarget, setDeleteTarget] = useState<StoredBooking | null>(null);
   const [editTarget, setEditTarget] = useState<StoredBooking | null>(null);
 
@@ -499,7 +509,7 @@ export default function PGDetailPage() {
             {tab === "residents" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {residents.length > 0 ? residents.map((b) => (
-                  <ResidentCard key={b.objectId} booking={b} onVacate={handleVacate} onDelete={setDeleteTarget} onEdit={setEditTarget} onViewProof={setProofUrl} />
+                  <ResidentCard key={b.objectId} booking={b} onVacate={handleVacate} onDelete={setDeleteTarget} onEdit={setEditTarget} onViewProof={handleViewProof} />
                 )) : (
                   <div style={{ textAlign: "center", padding: "48px 24px", backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #E8E4DE" }}>
                     <HiClock size={32} color="#D6D3CE" style={{ marginBottom: "12px" }} />
@@ -512,7 +522,7 @@ export default function PGDetailPage() {
             {tab === "pending" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {pending.length > 0 ? pending.map((b) => (
-                  <PendingCard key={b.objectId} booking={b} onConfirm={handleConfirm} onReject={handleReject} onViewProof={setProofUrl} />
+                  <PendingCard key={b.objectId} booking={b} onConfirm={handleConfirm} onReject={handleReject} onViewProof={handleViewProof} />
                 )) : (
                   <div style={{ textAlign: "center", padding: "48px 24px", backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #E8E4DE" }}>
                     <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C" }}>No pending requests.</p>

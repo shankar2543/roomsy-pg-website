@@ -151,6 +151,13 @@ export async function renewBooking(bookingId: string): Promise<{ objectId: strin
   return await Parse.Cloud.run("renewBooking", { bookingId });
 }
 
+export async function getSignedIdProofUrl(bookingId: string): Promise<string | null> {
+  const res = (await Parse.Cloud.run("getSignedIdProofUrl", { bookingId })) as
+    | { url: string | null; signed?: boolean }
+    | null;
+  return res?.url ?? null;
+}
+
 export function getBookingEndDate(booking: ServiceBooking): Date {
   const start = new Date(booking.fromDate);
   if (booking.stayType === "monthly" && booking.months) {

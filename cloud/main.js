@@ -793,3 +793,57 @@ Parse.Cloud.define("renewBooking", async (request) => {
   await fresh.save(null, { useMasterKey: true });
   return { objectId: fresh.id };
 });
+
+// ─── Signed ID-proof URL (Cloudinary authenticated delivery) ────────────────
+// Returns a URL the caller can render in an <img> for the booking's ID proof.
+// If the upload was made with type=authenticated, the URL is HMAC-SHA1 signed
+// against CLOUDINARY_API_SECRET so anonymous callers can't load it. Legacy
+// rows (type=upload) are returned as-is — the auth check on this function is
+// still the access boundary.
+
+Parse.Cloud.define("getSignedIdProofUrl", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const { bookingId } = request.params || {};
+  if (!bookingId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "bookingId required");
+
+  const b = await fetchBookingOrThrow(bookingId);
+
+  // Customer, PG owner, or platform admin can view.
+  const role = request.user.get("role");
+  const customer = b.get("user");
+  const owner = b.get("pgOwner");
+  const isCustomer = customer && customer.id === request.user.id;
+  const isOwner = owner && owner.id === request.user.id;
+  const isAdmin = role === "platform_admin";
+  if (!isCustomer && !isOwner && !isAdmin) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "Not authorised");
+  }
+
+  const url = b.get("idProofUrl");
+  if (!url) return { url: null };
+
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  if (!cloudName || !apiSecret) {
+    return { url, signed: false, reason: "cloudinary-env-missing" };
+  }
+
+  // Match: https://res.cloudinary.com/<cloud>/image/<delivery>/(<transforms>/)?<v\d+>/<public_id>.<ext>
+  const m = url.match(/cloudinary\.com\/[^/]+\/image\/(upload|authenticated|private)\/(?:.*?\/)?(v\d+)\/([^?]+)$/i);
+  if (!m) return { url, signed: false, reason: "unparseable" };
+
+  const delivery = m[1];
+  const versionAndPath = `${m[2]}/${m[3]}`;
+
+  if (delivery === "upload") {
+    // Legacy plain upload — can't sign, fall back to original URL. The
+    // auth check above is still the access boundary for the page.
+    return { url, signed: false, reason: "legacy-upload" };
+  }
+
+  const crypto = require("crypto");
+  const digest = crypto.createHash("sha1").update(versionAndPath + apiSecret).digest();
+  const sig = digest.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "").slice(0, 8);
+  const signedUrl = `https://res.cloudinary.com/${cloudName}/image/${delivery}/s--${sig}--/${versionAndPath}`;
+  return { url: signedUrl, signed: true };
+});
