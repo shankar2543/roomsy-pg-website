@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getAllUsers } from "@/lib/dummyAuth";
-import { getAllBookings } from "@/lib/dummyBookings";
+import { getAllBookings } from "@/lib/bookingService";
 import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
 import { AdminSidebar } from "./dashboard";
 import { HiUsers, HiSearch, HiOfficeBuilding, HiUser, HiShieldCheck, HiHome, HiChevronDown, HiPhone, HiMail, HiChevronRight } from "react-icons/hi";
@@ -140,11 +140,17 @@ export default function AdminUsers() {
     setAllPGs(getAllPGsWithOverrides());
   }, [user, hydrated]);
 
+  const [allBookings, setAllBookings] = useState<import("@/lib/bookingService").StoredBooking[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getAllBookings().then((rows) => { if (!cancelled) setAllBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   // Map: tenantId → active PGs (confirmed/active bookings)
   const tenantPGMap = useMemo(() => {
-    const bookings = getAllBookings();
     const map: Record<string, PGRef[]> = {};
-    bookings
+    allBookings
       .filter((b) => b.status === "confirmed" || b.status === "pending")
       .forEach((b) => {
         if (!map[b.userId]) map[b.userId] = [];
@@ -153,7 +159,7 @@ export default function AdminUsers() {
         }
       });
     return map;
-  }, []);
+  }, [allBookings]);
 
   // Map: ownerId → PGs they own
   const ownerPGMap = useMemo(() => {

@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllPGsWithOverrides, suspendPG, unsuspendPG } from "@/lib/dummyPGAdmin";
+import { listAllPGs, suspendPG, unsuspendPG } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import { AdminSidebar, STATES } from "./dashboard";
 import {
@@ -117,8 +117,14 @@ function StatePGList({ stateSlug, allPGs, onRefresh }: { stateSlug: string; allP
     suspended: statePGs.filter((p) => p.isSuspended).length,
   };
 
-  function handleSuspend(pg: PG) { suspendPG(pg.objectId); toast.success(`${pg.name} suspended.`); onRefresh(); }
-  function handleUnsuspend(pg: PG) { unsuspendPG(pg.objectId); toast.success(`${pg.name} reinstated.`); onRefresh(); }
+  async function handleSuspend(pg: PG) {
+    try { await suspendPG(pg.objectId); toast.success(`${pg.name} suspended.`); onRefresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not suspend"); }
+  }
+  async function handleUnsuspend(pg: PG) {
+    try { await unsuspendPG(pg.objectId); toast.success(`${pg.name} reinstated.`); onRefresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not reinstate"); }
+  }
 
   const TABS: { key: Tab; label: string; count: number }[] = [
     { key: "all",       label: "All",       count: counts.all },
@@ -191,7 +197,11 @@ export default function AdminPGs() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "platform_admin") { router.replace("/"); return; }
-    setAllPGs(getAllPGsWithOverrides());
+    let cancelled = false;
+    listAllPGs()
+      .then((rows) => { if (!cancelled) setAllPGs(rows); })
+      .catch((e) => toast.error(e instanceof Error ? e.message : "Could not load PGs"));
+    return () => { cancelled = true; };
   }, [user, hydrated, refreshKey]);
 
   useEffect(() => {

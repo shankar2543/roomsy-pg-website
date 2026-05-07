@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { useAuthStore } from "@/store/useAuthStore";
-import { updateUserDummy } from "@/lib/dummyAuth";
+import { updateCurrentUser } from "@/lib/authService";
 import { AdminSidebar, LogoutModal } from "@/pages/admin/dashboard";
 import {
   HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker,
@@ -68,11 +68,11 @@ export default function ProfilePage() {
     (completionItems.filter((i) => i.done).length / completionItems.length) * 100
   );
 
-  function handleSave() {
+  async function handleSave() {
     if (!user) return;
     setSaving(true);
     try {
-      const updated = updateUserDummy(user.objectId, {
+      const updated = await updateCurrentUser({
         name: form.name.trim(),
         phone: form.phone.trim(),
         city: form.city.trim() || undefined,
@@ -92,10 +92,14 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const updated = updateUserDummy(user.objectId, { profilePic: reader.result as string });
-      setUser(updated);
-      toast.success("Photo updated");
+    reader.onload = async () => {
+      try {
+        const updated = await updateCurrentUser({ profilePic: reader.result as string });
+        setUser(updated);
+        toast.success("Photo updated");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not update photo");
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -104,13 +108,17 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const updated = updateUserDummy(user.objectId, {
-        idProofUrl: reader.result as string,
-        idProofType: user.idProofType || "aadhaar",
-      });
-      setUser(updated);
-      toast.success("ID proof uploaded · Verification pending");
+    reader.onload = async () => {
+      try {
+        const updated = await updateCurrentUser({
+          idProofUrl: reader.result as string,
+          idProofType: user.idProofType || "aadhaar",
+        });
+        setUser(updated);
+        toast.success("ID proof uploaded · Verification pending");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not upload ID proof");
+      }
     };
     reader.readAsDataURL(file);
   }

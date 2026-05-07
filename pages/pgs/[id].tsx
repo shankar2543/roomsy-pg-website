@@ -6,8 +6,8 @@ import Image from "next/image";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { PGDetailSkeleton, useInitialLoading } from "@/components/common/Skeleton";
-import { getPGWithOverrides } from "@/lib/dummyPGAdmin";
-import { saveBooking } from "@/lib/dummyBookings";
+import { getPGById } from "@/lib/pgService";
+import { createBooking } from "@/lib/bookingService";
 import { isWishlisted, toggleWishlist } from "@/lib/dummyWishlist";
 import { useAuthStore } from "@/store/useAuthStore";
 import { PG } from "@/types/pg";
@@ -198,7 +198,7 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
     }
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (stayType === "daily" && (!fromDate || !toDate || nights === 0)) {
       toast.error("Please select valid check-in and check-out dates.");
       return;
@@ -220,17 +220,14 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
         ? { fromDate, toDate, nights: String(nights) }
         : { months: String(months) }),
     });
-    // Persist booking to localStorage
     const currentUser = useAuthStore.getState().user;
-    if (currentUser) {
-      saveBooking({
-        objectId: `bk_${Date.now()}`,
-        userId: currentUser.objectId,
+    if (!currentUser) {
+      toast.error("Please log in to book a stay");
+      return;
+    }
+    try {
+      await createBooking({
         pgId: pg.objectId,
-        pgOwnerId: pg.owner.objectId,
-        pgName: pg.name,
-        pgArea: pg.area,
-        pgPhoto: pg.photos[0] || "",
         sharing,
         stayType,
         fromDate,
@@ -238,12 +235,13 @@ function BookingModal({ pg, initialSharing, onClose }: { pg: PG; initialSharing?
         months: stayType === "monthly" ? months : undefined,
         nights: stayType === "daily" ? nights : undefined,
         total,
-        status: "pending",
+        idProofUrl,
         tenantName: currentUser.name,
         tenantPhone: currentUser.phone,
-        idProofUrl,
-        createdAt: new Date().toISOString(),
       });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not submit booking");
+      return;
     }
     toast.success("Booking request sent! The owner will contact you shortly.");
     onClose();
@@ -970,9 +968,20 @@ export default function PGDetailPage() {
     }
   }
   const [bookingSharing, setBookingSharing] = useState<SharingKey | undefined>();
-  const isLoadingDetail = useInitialLoading(500);
+  const initialLoadingDetail = useInitialLoading(500);
+  const [pg, setPg] = useState<PG | undefined>(undefined);
+  const [pgLoaded, setPgLoaded] = useState(false);
+  const isLoadingDetail = initialLoadingDetail || !pgLoaded;
 
-  const pg: PG | undefined = getPGWithOverrides(id) ?? undefined;
+  useEffect(() => {
+    if (!router.isReady || !id) return;
+    let cancelled = false;
+    setPgLoaded(false);
+    getPGById(id)
+      .then((row) => { if (!cancelled) { setPg(row ?? undefined); setPgLoaded(true); } })
+      .catch((err) => { if (!cancelled) { setPgLoaded(true); toast.error(err instanceof Error ? err.message : "Could not load PG"); } });
+    return () => { cancelled = true; };
+  }, [id, router.isReady]);
 
   useEffect(() => {
     if (router.isReady && router.query.book === "true") {

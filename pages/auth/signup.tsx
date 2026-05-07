@@ -2,7 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { signupDummy } from "@/lib/dummyAuth";
+import { signupUser } from "@/lib/authService";
 import { useAuthStore } from "@/store/useAuthStore";
 import toast from "react-hot-toast";
 
@@ -25,7 +25,7 @@ export default function Signup() {
     setLoading(true);
     setError("");
     try {
-      const user = signupDummy({ name, email, phone, password, role: role as "customer" | "pg_admin" });
+      const user = await signupUser({ name, email, phone, password, role: role as "customer" | "pg_admin" });
       setUser(user);
       toast.success("Account created! Welcome to Roomsy.");
       if (user.role === "pg_admin") {

@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { AppUser } from "@/types/user";
-import { getSessionUser, logoutDummy } from "@/lib/dummyAuth";
-
-const SESSION_KEY = "roomsy_session";
+import { getCurrentAppUser, logoutUser } from "@/lib/authService";
 
 interface AuthState {
   user: AppUser | null;
@@ -15,22 +13,13 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   hydrated: false,
-  setUser: (user) => {
-    set({ user });
-    if (typeof window !== "undefined") {
-      if (user) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      } else {
-        localStorage.removeItem(SESSION_KEY);
-      }
-    }
-  },
+  setUser: (user) => set({ user }),
   restoreSession: () => {
-    const user = getSessionUser();
-    set({ user: user ?? null, hydrated: true });
+    const user = getCurrentAppUser();
+    set({ user, hydrated: true });
   },
   logout: () => {
-    logoutDummy();
+    void logoutUser();
     set({ user: null });
   },
 }));

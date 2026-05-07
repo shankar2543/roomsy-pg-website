@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForOwner, StoredBooking } from "@/lib/dummyBookings";
-import { getPGsForOwner } from "@/lib/dummyPGAdmin";
+import { getBookingsForOwner, StoredBooking } from "@/lib/bookingService";
+import { getPGsForOwner } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import { Sidebar } from "./dashboard";
 import {
@@ -111,8 +111,10 @@ export default function PGAdminEarnings() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setAllBookings(getBookingsForOwner(user.objectId));
-    setPGs(getPGsForOwner(user.objectId));
+    let cancelled = false;
+    getBookingsForOwner(user.objectId).then((rows) => { if (!cancelled) setAllBookings(rows); }).catch(() => {});
+    getPGsForOwner(user.objectId).then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;

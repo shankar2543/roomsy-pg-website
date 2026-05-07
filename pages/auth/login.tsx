@@ -2,7 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { loginDummy } from "@/lib/dummyAuth";
+import { loginUser } from "@/lib/authService";
 import { useAuthStore } from "@/store/useAuthStore";
 import toast from "react-hot-toast";
 
@@ -28,7 +28,7 @@ export default function Login() {
       const allowedRoles: ("customer" | "pg_admin" | "platform_admin")[] =
         role === "platform_admin" ? ["platform_admin"] : ["customer", "pg_admin"];
 
-      const user = loginDummy({ identifier: idValue, password, role: allowedRoles });
+      const user = await loginUser({ identifier: idValue, password, role: allowedRoles });
 
       setUser(user);
       toast.success(`Welcome back, ${user.name}!`);

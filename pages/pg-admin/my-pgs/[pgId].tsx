@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGWithOverrides } from "@/lib/dummyPGAdmin";
+import { getPGById } from "@/lib/pgService";
 import {
   getBookingsForPG, vacateBooking, deleteBooking, updateBooking,
-  confirmBookingAdmin, rejectBookingAdmin,
+  confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin,
   getBookingEndDate, StoredBooking,
-} from "@/lib/dummyBookings";
+} from "@/lib/bookingService";
 import { PG } from "@/types/pg";
 import { Sidebar } from "../dashboard";
 import {
@@ -349,8 +349,10 @@ export default function PGDetailPage() {
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
     if (!pgId) return;
-    setPG(getPGWithOverrides(pgId));
-    setBookings(getBookingsForPG(pgId));
+    let cancelled = false;
+    getPGById(pgId).then((row) => { if (!cancelled) setPG(row); }).catch(() => {});
+    getBookingsForPG(pgId).then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated, pgId]);
 
   if (!user || user.role !== "pg_admin" || !pg) return null;
@@ -360,41 +362,61 @@ export default function PGDetailPage() {
   const history   = bookings.filter((b) => ["completed", "cancelled", "rejected"].includes(b.status));
 
   function reload() {
-    setPG(getPGWithOverrides(pgId));
-    setBookings(getBookingsForPG(pgId));
+    getPGById(pgId).then((row) => setPG(row)).catch(() => {});
+    getBookingsForPG(pgId).then((rows) => setBookings(rows)).catch(() => {});
   }
 
-  function handleVacate(id: string) {
-    vacateBooking(id);
-    reload();
-    toast.success("Tenant marked as vacated. Bed is now available.");
+  async function handleVacate(id: string) {
+    try {
+      await vacateBooking(id);
+      reload();
+      toast.success("Tenant marked as vacated. Bed is now available.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not vacate");
+    }
   }
 
-  function handleDelete(booking: StoredBooking) {
-    deleteBooking(booking.objectId);
-    setDeleteTarget(null);
-    reload();
-    toast.success(`${booking.tenantName || "Booking"} deleted.`);
+  async function handleDelete(booking: StoredBooking) {
+    try {
+      await deleteBooking(booking.objectId);
+      setDeleteTarget(null);
+      reload();
+      toast.success(`${booking.tenantName || "Booking"} deleted.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete");
+    }
   }
 
-  function handleEdit(updates: Partial<Pick<StoredBooking, "fromDate" | "months" | "nights" | "total" | "sharing">>) {
+  async function handleEdit(updates: Partial<Pick<StoredBooking, "fromDate" | "months" | "nights" | "total" | "sharing">>) {
     if (!editTarget) return;
-    updateBooking(editTarget.objectId, updates);
-    setEditTarget(null);
-    reload();
-    toast.success("Booking updated.");
+    try {
+      await updateBooking(editTarget.objectId, updates);
+      setEditTarget(null);
+      reload();
+      toast.success("Booking updated.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not update");
+    }
   }
 
-  function handleConfirm(id: string) {
-    confirmBookingAdmin(id);
-    reload();
-    toast.success("Booking confirmed!");
+  async function handleConfirm(id: string) {
+    try {
+      await confirmBookingAdmin(id);
+      reload();
+      toast.success("Booking confirmed!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not confirm");
+    }
   }
 
-  function handleReject(id: string) {
-    rejectBookingAdmin(id);
-    reload();
-    toast.error("Booking rejected.");
+  async function handleReject(id: string) {
+    try {
+      await rejectBookingAdmin(id);
+      reload();
+      toast.error("Booking rejected.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not reject");
+    }
   }
 
   const TABS: { key: Tab; label: string; count: number }[] = [

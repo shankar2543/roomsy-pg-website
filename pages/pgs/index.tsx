@@ -7,7 +7,7 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { PGCardSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { filterPGs, ACTIVE_CITY } from "@/lib/dummyPGs";
-import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
+import { listApprovedPGs } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import {
   HiX, HiLocationMarker, HiStar, HiHeart, HiOutlineHeart,
@@ -392,7 +392,18 @@ export default function PGsPage() {
   const [sortBy, setSortBy]                     = useState("best-rated");
   const [results, setResults]                   = useState<PG[]>([]);
   const [typeCounts, setTypeCounts]             = useState({ all: 0, boys: 0, girls: 0, coliving: 0 });
-  const isLoading                               = useInitialLoading(500);
+  const [allPGs, setAllPGs]                     = useState<PG[]>([]);
+  const [pgsLoaded, setPgsLoaded]               = useState(false);
+  const initialLoading                          = useInitialLoading(500);
+  const isLoading                               = initialLoading || !pgsLoaded;
+
+  useEffect(() => {
+    let cancelled = false;
+    listApprovedPGs()
+      .then((pgs) => { if (!cancelled) { setAllPGs(pgs); setPgsLoaded(true); } })
+      .catch((err) => { if (!cancelled) { setPgsLoaded(true); toast.error(err instanceof Error ? err.message : "Could not load PGs"); } });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -403,7 +414,7 @@ export default function PGsPage() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const base = filterPGs({ area: areaInput, occupancy }, getAllPGsWithOverrides());
+    const base = filterPGs({ area: areaInput, occupancy }, allPGs);
 
     const afterPrice = maxPrice < MAX_PRICE_MAX
       ? base.filter((pg) => pg.monthlyPrice <= maxPrice)
@@ -434,7 +445,7 @@ export default function PGsPage() {
     else if (sortBy === "price-desc") sorted.sort((a, b) => b.monthlyPrice - a.monthlyPrice);
 
     setResults(sorted);
-  }, [areaInput, selectedPgType, maxPrice, occupancy, selectedAmenities, sortBy, router.isReady]);
+  }, [areaInput, selectedPgType, maxPrice, occupancy, selectedAmenities, sortBy, router.isReady, allPGs]);
 
   function selectPgType(val: string) {
     setPgType(val);

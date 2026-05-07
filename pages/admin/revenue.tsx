@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllBookings, StoredBooking } from "@/lib/dummyBookings";
+import { getAllBookings, StoredBooking } from "@/lib/bookingService";
 import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
 import { PG } from "@/types/pg";
 import { AdminSidebar } from "./dashboard";
@@ -168,7 +168,9 @@ export default function AdminRevenue() {
     if (!user) { router.replace("/"); return; }
     if (user.role !== "platform_admin") { router.replace("/"); return; }
     setAllPGs(getAllPGsWithOverrides());
-    setBookings(getAllBookings());
+    let cancelled = false;
+    getAllBookings().then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   const [rangeStart, rangeEnd] = useMemo(() => getRange(period, refDate), [period, refDate]);

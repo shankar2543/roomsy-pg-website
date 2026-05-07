@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForOwner, confirmBookingAdmin, rejectBookingAdmin, StoredBooking } from "@/lib/dummyBookings";
+import { getBookingsForOwner, confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin, StoredBooking } from "@/lib/bookingService";
 import { Sidebar } from "./dashboard";
 import {
   HiCalendar, HiPhone, HiX, HiCheckCircle, HiXCircle, HiEye,
@@ -184,7 +184,9 @@ export default function PGAdminBookings() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setBookings(getBookingsForOwner(user.objectId));
+    let cancelled = false;
+    getBookingsForOwner(user.objectId).then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   useEffect(() => {
@@ -197,16 +199,24 @@ export default function PGAdminBookings() {
 
   if (!user || user.role !== "pg_admin") return null;
 
-  function handleConfirm(id: string) {
-    confirmBookingAdmin(id);
-    setBookings((prev) => prev.map((b) => b.objectId === id ? { ...b, status: "confirmed" } : b));
-    toast.success("Booking confirmed! Tenant will be notified.");
+  async function handleConfirm(id: string) {
+    try {
+      await confirmBookingAdmin(id);
+      setBookings((prev) => prev.map((b) => b.objectId === id ? { ...b, status: "confirmed" } : b));
+      toast.success("Booking confirmed! Tenant will be notified.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not confirm");
+    }
   }
 
-  function handleReject(id: string) {
-    rejectBookingAdmin(id);
-    setBookings((prev) => prev.map((b) => b.objectId === id ? { ...b, status: "rejected" } : b));
-    toast.error("Booking rejected.");
+  async function handleReject(id: string) {
+    try {
+      await rejectBookingAdmin(id);
+      setBookings((prev) => prev.map((b) => b.objectId === id ? { ...b, status: "rejected" } : b));
+      toast.error("Booking rejected.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not reject");
+    }
   }
 
   const counts: Record<StatusFilter, number> = {

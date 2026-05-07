@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGWithOverrides, approvePG, suspendPG, unsuspendPG } from "@/lib/dummyPGAdmin";
-import { getBookingsForPG, StoredBooking } from "@/lib/dummyBookings";
+import { getPGById, approvePG, suspendPG, unsuspendPG } from "@/lib/pgService";
+import { getBookingsForPG, StoredBooking } from "@/lib/bookingService";
 import { PG } from "@/types/pg";
 import { AdminSidebar } from "../dashboard";
 import {
@@ -112,7 +112,10 @@ export default function AdminPGDetail() {
   const [bookings, setBookings] = useState<StoredBooking[]>([]);
 
   useEffect(() => {
-    if (pgId) setBookings(getBookingsForPG(pgId));
+    if (!pgId) return;
+    let cancelled = false;
+    getBookingsForPG(pgId).then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [pgId]);
 
   useEffect(() => {
@@ -122,31 +125,34 @@ export default function AdminPGDetail() {
   }, [user, hydrated]);
 
   useEffect(() => {
-    if (pgId) setPG(getPGWithOverrides(pgId));
+    if (!pgId) return;
+    let cancelled = false;
+    getPGById(pgId).then((row) => { if (!cancelled) setPG(row); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [pgId]);
 
   if (!user || user.role !== "platform_admin") return null;
   if (!pg) return null;
 
-  function handleApprove() {
-    approvePG(pg!.objectId);
-    toast.success(`${pg!.name} approved!`);
-    setPG(getPGWithOverrides(pg!.objectId));
+  async function reloadPG() {
+    const row = await getPGById(pg!.objectId);
+    setPG(row);
   }
-  function handleSuspend() {
-    suspendPG(pg!.objectId);
-    toast.success(`${pg!.name} suspended.`);
-    setPG(getPGWithOverrides(pg!.objectId));
+  async function handleApprove() {
+    try { await approvePG(pg!.objectId); toast.success(`${pg!.name} approved!`); await reloadPG(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not approve"); }
   }
-  function handleUnsuspend() {
-    unsuspendPG(pg!.objectId);
-    toast.success(`${pg!.name} reinstated.`);
-    setPG(getPGWithOverrides(pg!.objectId));
+  async function handleSuspend() {
+    try { await suspendPG(pg!.objectId); toast.success(`${pg!.name} suspended.`); await reloadPG(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not suspend"); }
   }
-  function handleReject() {
-    suspendPG(pg!.objectId);
-    toast.error(`${pg!.name} rejected.`);
-    router.push("/admin/pgs");
+  async function handleUnsuspend() {
+    try { await unsuspendPG(pg!.objectId); toast.success(`${pg!.name} reinstated.`); await reloadPG(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not reinstate"); }
+  }
+  async function handleReject() {
+    try { await suspendPG(pg!.objectId); toast.error(`${pg!.name} rejected.`); router.push("/admin/pgs"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not reject"); }
   }
 
   const sharingKeys = ["single", "double", "triple"] as const;

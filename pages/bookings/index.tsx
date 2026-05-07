@@ -7,7 +7,7 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { BookingRowSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForUser, cancelBooking, StoredBooking } from "@/lib/dummyBookings";
+import { getBookingsForUser, cancelBooking, StoredBooking } from "@/lib/bookingService";
 import {
   HiLocationMarker, HiCalendar, HiArrowLeft, HiChevronDown,
 } from "react-icons/hi";
@@ -447,13 +447,21 @@ export default function MyBookingsPage() {
   useEffect(() => {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
-    setBookings(getBookingsForUser(user.objectId));
+    let cancelled = false;
+    getBookingsForUser(user.objectId)
+      .then((rows) => { if (!cancelled) setBookings(rows); })
+      .catch((e) => toast.error(e instanceof Error ? e.message : "Could not load bookings"));
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
-  function handleCancel(objectId: string) {
-    cancelBooking(objectId);
-    setBookings((prev) => prev.map((b) => b.objectId === objectId ? { ...b, status: "cancelled" } : b));
-    toast.success("Booking cancelled.");
+  async function handleCancel(objectId: string) {
+    try {
+      await cancelBooking(objectId);
+      setBookings((prev) => prev.map((b) => b.objectId === objectId ? { ...b, status: "cancelled" } : b));
+      toast.success("Booking cancelled.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not cancel");
+    }
   }
 
   const filtered = statusFilter === "all"

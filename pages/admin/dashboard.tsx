@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
+import { listAllPGs } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import {
   HiHome, HiOfficeBuilding, HiUsers,
@@ -238,7 +238,9 @@ export default function AdminDashboard() {
       const saved = sessionStorage.getItem("roomsy_admin_state");
       if (saved) { router.replace(`/admin/pgs?state=${saved}`); return; }
     }
-    setPGs(getAllPGsWithOverrides());
+    let cancelled = false;
+    listAllPGs().then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "platform_admin") return null;

@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { createPG, type PGDraft } from "@/lib/dummyPGAdmin";
+import { createPG } from "@/lib/pgService";
 import { uploadPGPhoto } from "@/lib/cloudinary";
 import { PGType, FoodOption, Parking, Occupancy } from "@/types/pg";
 import { Sidebar } from "../dashboard";
@@ -169,7 +169,7 @@ export default function NewPGPage() {
     const anyPrice = Object.values(sharingPrices).some((v) => typeof v === "number" && v > 0);
     if (!anyPrice) return toast.error("Set at least one sharing-room monthly price");
 
-    const draft: PGDraft = {
+    const draft = {
       name: form.name.trim(),
       description: form.description.trim(),
       city: form.city.trim() || "Hyderabad",
@@ -183,7 +183,6 @@ export default function NewPGPage() {
       location: { latitude: lat, longitude: lng },
       photos: form.photos,
       amenities: Array.from(form.amenities),
-      owner: { objectId: user.objectId, name: user.name, phone: user.phone },
       availableBeds: beds,
       sharingPrices,
       dailyPrices: {
@@ -195,11 +194,11 @@ export default function NewPGPage() {
 
     setSubmitting(true);
     try {
-      const newPG = createPG(draft);
+      const newPG = await createPG(draft);
       toast.success("PG submitted! Awaiting admin approval.");
       router.push(`/pg-admin/my-pgs/${newPG.objectId}`);
-    } catch {
-      toast.error("Could not save PG. Please try again.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save PG. Please try again.");
       setSubmitting(false);
     }
   }

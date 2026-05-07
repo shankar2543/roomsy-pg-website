@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGsForOwner } from "@/lib/dummyPGAdmin";
-import { getBookingsForOwner, StoredBooking } from "@/lib/dummyBookings";
+import { getPGsForOwner } from "@/lib/pgService";
+import { getBookingsForOwner, StoredBooking } from "@/lib/bookingService";
 import { PG } from "@/types/pg";
 import {
   HiHome, HiClipboardList, HiPhotograph, HiSparkles,
@@ -340,8 +340,10 @@ export default function PGAdminDashboard() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setPGs(getPGsForOwner(user.objectId));
-    setBookings(getBookingsForOwner(user.objectId));
+    let cancelled = false;
+    getPGsForOwner(user.objectId).then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    getBookingsForOwner(user.objectId).then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;

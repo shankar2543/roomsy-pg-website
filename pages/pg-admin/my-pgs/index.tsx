@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGsForOwner } from "@/lib/dummyPGAdmin";
-import { getBookingsForPG } from "@/lib/dummyBookings";
+import { getPGsForOwner } from "@/lib/pgService";
+import { getBookingsForPG } from "@/lib/bookingService";
 import { PG } from "@/types/pg";
 import { Sidebar } from "../dashboard";
 import { HiLocationMarker, HiChevronRight, HiOfficeBuilding, HiUsers, HiClock, HiBadgeCheck, HiArrowLeft, HiPlus } from "react-icons/hi";
@@ -23,17 +23,26 @@ export default function MyPGsPage() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    const list = getPGsForOwner(user.objectId);
-    setPGs(list);
-    const stats: Record<string, { residents: number; pending: number }> = {};
-    list.forEach((pg) => {
-      const bookings = getBookingsForPG(pg.objectId);
-      stats[pg.objectId] = {
-        residents: bookings.filter((b) => b.status === "confirmed").length,
-        pending: bookings.filter((b) => b.status === "pending").length,
-      };
-    });
-    setPGStats(stats);
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await getPGsForOwner(user.objectId);
+        if (cancelled) return;
+        setPGs(list);
+        const bookingsByPG = await Promise.all(list.map((pg) => getBookingsForPG(pg.objectId)));
+        if (cancelled) return;
+        const stats: Record<string, { residents: number; pending: number }> = {};
+        list.forEach((pg, idx) => {
+          const bookings = bookingsByPG[idx];
+          stats[pg.objectId] = {
+            residents: bookings.filter((b) => b.status === "confirmed").length,
+            pending: bookings.filter((b) => b.status === "pending").length,
+          };
+        });
+        setPGStats(stats);
+      } catch { /* silent — list stays empty */ }
+    })();
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;
