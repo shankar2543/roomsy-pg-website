@@ -90,6 +90,27 @@ export function getCurrentAppUser(): AppUser | null {
   return u ? toAppUser(u) : null;
 }
 
+export async function listAllUsers(): Promise<AppUser[]> {
+  const rows = (await Parse.Cloud.run("listAllUsers")) as Array<{
+    objectId: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: UserRole;
+    profilePic: string | null;
+    city: string | null;
+  }>;
+  return rows.map((r) => ({
+    objectId: r.objectId,
+    name: r.name,
+    email: r.email,
+    phone: r.phone,
+    role: r.role,
+    profilePic: r.profilePic ?? undefined,
+    city: r.city ?? undefined,
+  }));
+}
+
 export async function updateCurrentUser(patch: Partial<AppUser>): Promise<AppUser> {
   const u = Parse.User.current();
   if (!u) throw new Error("Not logged in.");

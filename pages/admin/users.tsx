@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllUsers } from "@/lib/dummyAuth";
+import { listAllUsers } from "@/lib/authService";
 import { getAllBookings } from "@/lib/bookingService";
 import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
 import { AdminSidebar } from "./dashboard";
@@ -136,8 +136,12 @@ export default function AdminUsers() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "platform_admin") { router.replace("/"); return; }
-    setUsers(getAllUsers().filter((u) => u.role !== "platform_admin"));
+    let cancelled = false;
+    listAllUsers()
+      .then((rows) => { if (!cancelled) setUsers(rows.filter((u) => u.role !== "platform_admin")); })
+      .catch(() => {});
     setAllPGs(getAllPGsWithOverrides());
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   const [allBookings, setAllBookings] = useState<import("@/lib/bookingService").StoredBooking[]>([]);

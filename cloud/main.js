@@ -233,6 +233,25 @@ Parse.Cloud.define("unsuspendPG", async (request) => {
   return { ok: true };
 });
 
+// Platform admin: read every user (sanitized — no password, no session token).
+Parse.Cloud.define("listAllUsers", async (request) => {
+  await requirePlatformAdmin(request);
+  const q = new Parse.Query(Parse.User);
+  q.limit(1000);
+  q.descending("createdAt");
+  const rows = await q.find({ useMasterKey: true });
+  return rows.map((u) => ({
+    objectId: u.id,
+    name: u.get("name") || "",
+    email: u.get("email") || "",
+    phone: u.get("phone") || "",
+    role: u.get("role") || "customer",
+    profilePic: u.get("profilePic") || null,
+    city: u.get("city") || null,
+    createdAt: u.get("createdAt"),
+  }));
+});
+
 // ─── Owner edits to existing PG ──────────────────────────────────────────────
 
 async function requirePGOwner(request, pgId) {
