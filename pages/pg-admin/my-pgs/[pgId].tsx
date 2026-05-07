@@ -73,7 +73,7 @@ function DeleteConfirmModal({ name, onCancel, onConfirm }: { name: string; onCan
         </div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "700", color: "#1C1917", marginBottom: "8px" }}>Delete booking?</h2>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C", marginBottom: "24px", lineHeight: 1.5 }}>
-          This will permanently remove <strong>{name}</strong>'s booking and free up the bed.
+          This will permanently remove <strong>{name}</strong>&apos;s booking and free up the bed.
         </p>
         <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={onCancel} style={{ flex: 1, padding: "12px", borderRadius: "100px", border: "1.5px solid #E8E4DE", backgroundColor: "#fff", fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "600", color: "#1C1917", cursor: "pointer" }}>Cancel</button>

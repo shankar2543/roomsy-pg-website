@@ -339,7 +339,7 @@ export default function Login() {
             <div style={{ height: "1px", backgroundColor: "#E8E4DE", margin: "20px 0" }} />
 
             <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C", textAlign: "center" }}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/auth/signup" style={{ color: "#FF385C", fontWeight: "600", textDecoration: "none" }}>
                 Sign up
               </Link>

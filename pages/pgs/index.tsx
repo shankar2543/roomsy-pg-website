@@ -503,8 +503,8 @@ export default function PGsPage() {
               <HiLocationMarker size={32} color="#FF385C" />
             </div>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Coming Soon</p>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(28px,5vw,42px)", fontWeight: "600", color: "#1C1917", letterSpacing: "-0.5px", lineHeight: "1.2", marginBottom: "16px" }}>We're launching in {area}!</h1>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "#78716C", lineHeight: "1.7", marginBottom: "32px" }}>Roomsy is currently live in {ACTIVE_CITY}. We're working hard to bring verified PGs to {area} very soon.</p>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(28px,5vw,42px)", fontWeight: "600", color: "#1C1917", letterSpacing: "-0.5px", lineHeight: "1.2", marginBottom: "16px" }}>We&apos;re launching in {area}!</h1>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "#78716C", lineHeight: "1.7", marginBottom: "32px" }}>Roomsy is currently live in {ACTIVE_CITY}. We&apos;re working hard to bring verified PGs to {area} very soon.</p>
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/" style={{ fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "600", color: "#1C1917", textDecoration: "none", padding: "12px 24px", borderRadius: "100px", border: "1.5px solid #E8E4DE", backgroundColor: "#fff" }}>← Back to Home</Link>
               <Link href="/pgs" style={{ fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "600", color: "#fff", textDecoration: "none", padding: "12px 24px", borderRadius: "100px", backgroundColor: "#FF385C" }}>Browse Hyderabad PGs</Link>

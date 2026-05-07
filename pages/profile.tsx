@@ -390,7 +390,7 @@ export default function ProfilePage() {
               <span className="profile-logout-icon"><HiOutlineLogout size={20} /></span>
               <div className="profile-logout-text">
                 <p className="profile-logout-title">Log out</p>
-                <p className="profile-logout-sub">You'll be signed out of the Admin Panel.</p>
+                <p className="profile-logout-sub">You&apos;ll be signed out of the Admin Panel.</p>
               </div>
             </button>
           )}

@@ -48,7 +48,7 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
           <span style={{ fontSize: "22px" }}>👋</span>
         </div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "600", color: "#1C1917", marginBottom: "8px" }}>Log out?</h2>
-        <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C", marginBottom: "24px" }}>You'll be signed out of the Admin Panel.</p>
+        <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C", marginBottom: "24px" }}>You&apos;ll be signed out of the Admin Panel.</p>
         <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={onCancel} style={{ flex: 1, padding: "12px", borderRadius: "100px", border: "1.5px solid #E8E4DE", backgroundColor: "#fff", fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "600", color: "#1C1917", cursor: "pointer" }}>Stay</button>
           <button onClick={onConfirm} style={{ flex: 1, padding: "12px", borderRadius: "100px", border: "none", backgroundColor: "#DC2626", fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: "700", color: "#fff", cursor: "pointer" }}>Log out</button>

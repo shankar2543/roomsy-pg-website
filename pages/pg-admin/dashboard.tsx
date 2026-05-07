@@ -88,7 +88,7 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
         </div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "600", color: "#1C1917", letterSpacing: "-0.3px", marginBottom: "8px" }}>Log out?</h2>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "#78716C", marginBottom: "24px", lineHeight: 1.6 }}>
-          You'll be signed out of your Owner Panel.
+          You&apos;ll be signed out of your Owner Panel.
         </p>
         <div style={{ display: "flex", gap: "10px" }}>
           <button

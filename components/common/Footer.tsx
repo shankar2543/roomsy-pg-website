@@ -70,7 +70,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="footer-brand-desc" style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C", lineHeight: "1.75", maxWidth: "220px", marginBottom: "24px" }}>
-              India's most trusted platform for finding verified PGs &amp; Hostels. We ensure a safe and comfortable stay for everyone.
+              India&apos;s most trusted platform for finding verified PGs &amp; Hostels. We ensure a safe and comfortable stay for everyone.
             </p>
             <div className="footer-socials" style={{ display: "flex", gap: "10px" }}>
               {SOCIAL.map((s, i) => (

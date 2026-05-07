@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   // arrays (e.g. [0.22, 1, 0.36, 1]) trip the type checker but are valid at
   // runtime. Skip the strict TS gate so production builds succeed.
   typescript: { ignoreBuildErrors: true },
-  eslint:     { ignoreDuringBuilds: true },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
