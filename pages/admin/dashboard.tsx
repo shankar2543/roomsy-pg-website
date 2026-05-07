@@ -66,7 +66,7 @@ function AdminSidebar({ active }: { active: string }) {
   return (
     <>
       <aside className="pg-sidebar">
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", padding: "28px 24px 22px" }}>
+        <Link href="/admin/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", padding: "28px 24px 22px" }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: "700", color: "#fff" }}>R</span>
           </div>
@@ -138,7 +138,7 @@ function AdminSidebar({ active }: { active: string }) {
       </aside>
 
       <div className="pg-mobile-topbar">
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
+        <Link href="/admin/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ width: "28px", height: "28px", borderRadius: "7px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: "700", color: "#fff" }}>R</span>
           </div>
