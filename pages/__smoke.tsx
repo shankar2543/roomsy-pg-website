@@ -88,6 +88,24 @@ export default function Smoke() {
     }
   };
 
+  const [backfillStatus, setBackfillStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [backfillResult, setBackfillResult] = useState<unknown>(null);
+  const [backfillError, setBackfillError] = useState<string>("");
+
+  const backfillOwners = async () => {
+    setBackfillStatus("loading");
+    setBackfillError("");
+    setBackfillResult(null);
+    try {
+      const data = await Parse.Cloud.run("backfillPGOwners");
+      setBackfillResult(data);
+      setBackfillStatus("ok");
+    } catch (e) {
+      setBackfillError(e instanceof Error ? e.message : String(e));
+      setBackfillStatus("error");
+    }
+  };
+
   return (
     <>
       <Head>
@@ -185,6 +203,27 @@ export default function Smoke() {
           {pgSeedStatus === "error" && (
             <pre style={{ ...pre, borderColor: "#FECACA", background: "#FEF2F2", color: "#991B1B" }}>
               {pgSeedError}
+            </pre>
+          )}
+        </section>
+
+        <section style={card}>
+          <h2 style={h2}>5. Backfill PG owner name + phone</h2>
+          <p style={{ fontSize: 13, color: "#78716C", marginBottom: 12 }}>
+            One-shot: copies <code>ownerName</code> / <code>ownerPhone</code> from each PG&apos;s owner User onto the PG row,
+            so customers can see them even though Parse&apos;s default _User ACL blocks anonymous reads.
+          </p>
+          <button onClick={backfillOwners} disabled={backfillStatus === "loading"} style={btn}>
+            {backfillStatus === "loading" ? "Backfilling…" : "Run Parse.Cloud.run('backfillPGOwners')"}
+          </button>
+          {backfillStatus === "ok" && (
+            <pre style={{ ...pre, borderColor: "#86EFAC", background: "#F0FDF4" }}>
+              {JSON.stringify(backfillResult, null, 2)}
+            </pre>
+          )}
+          {backfillStatus === "error" && (
+            <pre style={{ ...pre, borderColor: "#FECACA", background: "#FEF2F2", color: "#991B1B" }}>
+              {backfillError}
             </pre>
           )}
         </section>

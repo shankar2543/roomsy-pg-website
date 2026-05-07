@@ -22,8 +22,11 @@ function toPG(pp: Parse.Object): PG {
     amenities: pp.get("amenities") || [],
     owner: {
       objectId: owner?.id ?? "",
-      name: owner?.get("name") ?? "",
-      phone: owner?.get("phone") ?? "",
+      // Prefer the denormalised fields on the PG row — Parse's default
+      // _User ACL blocks anonymous reads, so the included owner's
+      // name/phone are usually empty for non-owner viewers.
+      name: pp.get("ownerName") || owner?.get("name") || "",
+      phone: pp.get("ownerPhone") || owner?.get("phone") || "",
     },
     isApproved: !!pp.get("isApproved"),
     isSuspended: !!pp.get("isSuspended"),

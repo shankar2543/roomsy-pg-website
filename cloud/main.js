@@ -130,11 +130,39 @@ Parse.Cloud.define("seedPGs", async () => {
     pg.set("sharingPrices", s.sharingPrices);
     pg.set("dailyPrices", s.dailyPrices);
     pg.set("owner", owner);
+    pg.set("ownerName", owner.get("name") || "");
+    pg.set("ownerPhone", owner.get("phone") || "");
     pg.setACL(publicAcl);
     await pg.save(null, { useMasterKey: true });
     results.push({ slug: s.slug, status: "created", objectId: pg.id });
   }
   return { ok: true, results };
+});
+
+// One-shot: copy ownerName / ownerPhone onto every existing PG row.
+// Parse's default _User ACL blocks anonymous customers from reading the
+// included owner's name and phone — so we denormalise the public-display
+// fields onto the PG itself. Safe to re-run.
+Parse.Cloud.define("backfillPGOwners", async () => {
+  const q = new Parse.Query("PG");
+  q.include("owner");
+  q.limit(1000);
+  const rows = await q.find({ useMasterKey: true });
+  let touched = 0;
+  for (const pg of rows) {
+    const owner = pg.get("owner");
+    if (!owner) continue;
+    let needsSave = false;
+    const name = owner.get("name") || "";
+    const phone = owner.get("phone") || "";
+    if (pg.get("ownerName") !== name) { pg.set("ownerName", name); needsSave = true; }
+    if (pg.get("ownerPhone") !== phone) { pg.set("ownerPhone", phone); needsSave = true; }
+    if (needsSave) {
+      await pg.save(null, { useMasterKey: true });
+      touched += 1;
+    }
+  }
+  return { ok: true, touched, total: rows.length };
 });
 
 // Owner submits a new PG for admin approval.
@@ -183,6 +211,8 @@ Parse.Cloud.define("createPG", async (request) => {
   pg.set("isApproved", false);
   pg.set("isSuspended", false);
   pg.set("owner", request.user);
+  pg.set("ownerName", request.user.get("name") || "");
+  pg.set("ownerPhone", request.user.get("phone") || "");
 
   await pg.save(null, { useMasterKey: true });
   await notifyAllPlatformAdmins({
