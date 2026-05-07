@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGsForOwner, updatePGPrices, updatePGAvailableBeds } from "@/lib/dummyPGAdmin";
+import { getPGsForOwner, updatePGPrices, updatePGAvailableBeds } from "@/lib/pgService";
 import { PG, Occupancy } from "@/types/pg";
 import { Sidebar } from "./dashboard";
 import { HiPencil, HiCheck, HiX, HiArrowLeft } from "react-icons/hi";
@@ -181,12 +181,14 @@ export default function PGAdminRooms() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setPGs(getPGsForOwner(user.objectId));
+    let cancelled = false;
+    getPGsForOwner(user.objectId).then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;
 
-  function handleSave(pgId: string, edit: PGEdit) {
+  async function handleSave(pgId: string, edit: PGEdit) {
     const sharingPrices: PG["sharingPrices"] = {};
     const dailyPrices: PG["dailyPrices"] = {};
 
@@ -195,10 +197,15 @@ export default function PGAdminRooms() {
       dailyPrices[occ] = r.dailyPrice;
     });
 
-    updatePGPrices(pgId, sharingPrices, dailyPrices);
-    updatePGAvailableBeds(pgId, edit.availableBeds);
-    setPGs(getPGsForOwner(user!.objectId));
-    toast.success("Room prices updated!");
+    try {
+      await updatePGPrices(pgId, sharingPrices, dailyPrices);
+      await updatePGAvailableBeds(pgId, edit.availableBeds);
+      const rows = await getPGsForOwner(user!.objectId);
+      setPGs(rows);
+      toast.success("Room prices updated!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    }
   }
 
   return (

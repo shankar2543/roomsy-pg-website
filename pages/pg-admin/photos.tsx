@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGsForOwner, addPGPhoto, removePGPhoto, getPGWithOverrides } from "@/lib/dummyPGAdmin";
+import { getPGsForOwner, updatePGPhotos } from "@/lib/pgService";
 import { uploadPGPhoto } from "@/lib/cloudinary";
 import { PG } from "@/types/pg";
 import { Sidebar } from "./dashboard";
@@ -31,27 +31,32 @@ function PhotoGrid({ pg, onRefresh }: { pg: PG; onRefresh: () => void }) {
     setUploading(true);
     try {
       const url = await uploadPGPhoto(file);
-      addPGPhoto(pg.objectId, url);
+      await updatePGPhotos(pg.objectId, [...pg.photos, url]);
       onRefresh();
       toast.success("Photo uploaded!");
-    } catch {
-      toast.error("Upload failed. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed. Please try again.");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
     }
   }
 
-  function handleDelete(photoUrl: string) {
+  async function handleDelete(photoUrl: string) {
     if (pg.photos.length <= 1) {
       toast.error("You need at least one photo.");
       return;
     }
     setDeleting(photoUrl);
-    removePGPhoto(pg.objectId, photoUrl);
-    onRefresh();
-    setDeleting(null);
-    toast.success("Photo removed.");
+    try {
+      await updatePGPhotos(pg.objectId, pg.photos.filter((p) => p !== photoUrl));
+      onRefresh();
+      toast.success("Photo removed.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove photo");
+    } finally {
+      setDeleting(null);
+    }
   }
 
   return (
@@ -147,13 +152,15 @@ export default function PGAdminPhotos() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setPGs(getPGsForOwner(user.objectId));
+    let cancelled = false;
+    getPGsForOwner(user.objectId).then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;
 
   function refresh() {
-    setPGs(getPGsForOwner(user!.objectId));
+    getPGsForOwner(user!.objectId).then((rows) => setPGs(rows)).catch(() => {});
   }
 
   return (

@@ -110,3 +110,23 @@ export async function suspendPG(pgId: string): Promise<void> {
 export async function unsuspendPG(pgId: string): Promise<void> {
   await Parse.Cloud.run("unsuspendPG", { pgId });
 }
+
+export async function updatePGPhotos(pgId: string, photos: string[]): Promise<void> {
+  await Parse.Cloud.run("updatePGPhotos", { pgId, photos });
+}
+
+export async function updatePGPrices(
+  pgId: string,
+  sharingPrices: { single?: number; double?: number; triple?: number },
+  dailyPrices: { single?: number; double?: number; triple?: number },
+): Promise<void> {
+  await Parse.Cloud.run("updatePGPrices", { pgId, sharingPrices, dailyPrices });
+}
+
+export async function updatePGAvailableBeds(pgId: string, availableBeds: number): Promise<void> {
+  await Parse.Cloud.run("updatePGAvailableBeds", { pgId, availableBeds });
+}
+
+export async function updatePGAmenities(pgId: string, amenities: string[]): Promise<void> {
+  await Parse.Cloud.run("updatePGAmenities", { pgId, amenities });
+}

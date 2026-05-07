@@ -233,6 +233,64 @@ Parse.Cloud.define("unsuspendPG", async (request) => {
   return { ok: true };
 });
 
+// ─── Owner edits to existing PG ──────────────────────────────────────────────
+
+async function requirePGOwner(request, pgId) {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  if (!pgId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "pgId is required");
+  const pg = await fetchPGOrThrow(pgId);
+  const owner = pg.get("owner");
+  if (!owner || owner.id !== request.user.id) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "Only the PG owner can edit this listing");
+  }
+  return pg;
+}
+
+Parse.Cloud.define("updatePGPhotos", async (request) => {
+  const { pgId, photos } = request.params || {};
+  if (!Array.isArray(photos)) throw new Parse.Error(Parse.Error.INVALID_QUERY, "photos must be an array");
+  if (photos.length === 0) throw new Parse.Error(Parse.Error.INVALID_QUERY, "At least one photo is required");
+  const pg = await requirePGOwner(request, pgId);
+  pg.set("photos", photos.map(String));
+  await pg.save(null, { useMasterKey: true });
+  return { ok: true };
+});
+
+Parse.Cloud.define("updatePGPrices", async (request) => {
+  const { pgId, sharingPrices, dailyPrices } = request.params || {};
+  if (!sharingPrices || typeof sharingPrices !== "object") {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, "sharingPrices is required");
+  }
+  const pg = await requirePGOwner(request, pgId);
+  pg.set("sharingPrices", sharingPrices);
+  pg.set("dailyPrices", dailyPrices || {});
+  const sharingValues = Object.values(sharingPrices).filter((v) => typeof v === "number" && v > 0);
+  const lowestMonthly = sharingValues.length > 0 ? Math.min(...sharingValues) : 0;
+  pg.set("monthlyPrice", lowestMonthly);
+  await pg.save(null, { useMasterKey: true });
+  return { ok: true };
+});
+
+Parse.Cloud.define("updatePGAvailableBeds", async (request) => {
+  const { pgId, availableBeds } = request.params || {};
+  if (typeof availableBeds !== "number" || availableBeds < 0) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, "availableBeds must be a non-negative number");
+  }
+  const pg = await requirePGOwner(request, pgId);
+  pg.set("availableBeds", Math.floor(availableBeds));
+  await pg.save(null, { useMasterKey: true });
+  return { ok: true };
+});
+
+Parse.Cloud.define("updatePGAmenities", async (request) => {
+  const { pgId, amenities } = request.params || {};
+  if (!Array.isArray(amenities)) throw new Parse.Error(Parse.Error.INVALID_QUERY, "amenities must be an array");
+  const pg = await requirePGOwner(request, pgId);
+  pg.set("amenities", amenities.map(String));
+  await pg.save(null, { useMasterKey: true });
+  return { ok: true };
+});
+
 // ─── Booking lifecycle ───────────────────────────────────────────────────────
 
 async function fetchBookingOrThrow(bookingId) {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getPGsForOwner, updatePGAmenities } from "@/lib/dummyPGAdmin";
+import { getPGsForOwner, updatePGAmenities } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import { Sidebar } from "./dashboard";
 import {
@@ -143,15 +143,22 @@ export default function PGAdminAmenities() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "pg_admin") { router.replace("/"); return; }
-    setPGs(getPGsForOwner(user.objectId));
+    let cancelled = false;
+    getPGsForOwner(user.objectId).then((rows) => { if (!cancelled) setPGs(rows); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hydrated]);
 
   if (!user || user.role !== "pg_admin") return null;
 
-  function handleSave(pgId: string, amenities: string[]) {
-    updatePGAmenities(pgId, amenities);
-    setPGs(getPGsForOwner(user!.objectId));
-    toast.success("Amenities saved!");
+  async function handleSave(pgId: string, amenities: string[]) {
+    try {
+      await updatePGAmenities(pgId, amenities);
+      const rows = await getPGsForOwner(user!.objectId);
+      setPGs(rows);
+      toast.success("Amenities saved!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    }
   }
 
   return (
