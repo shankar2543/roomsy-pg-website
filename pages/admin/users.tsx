@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { listAllUsers } from "@/lib/authService";
 import { getAllBookings } from "@/lib/bookingService";
-import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
+import { listAllPGs } from "@/lib/pgService";
 import { AdminSidebar } from "./dashboard";
 import { HiUsers, HiSearch, HiOfficeBuilding, HiUser, HiShieldCheck, HiHome, HiChevronDown, HiPhone, HiMail, HiChevronRight } from "react-icons/hi";
 import { AppUser } from "@/types/user";
@@ -140,7 +140,9 @@ export default function AdminUsers() {
     listAllUsers()
       .then((rows) => { if (!cancelled) setUsers(rows.filter((u) => u.role !== "platform_admin")); })
       .catch(() => {});
-    setAllPGs(getAllPGsWithOverrides());
+    listAllPGs()
+      .then((rows) => { if (!cancelled) setAllPGs(rows); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [user, hydrated]);
 

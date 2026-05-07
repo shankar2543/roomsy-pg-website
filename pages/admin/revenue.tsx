@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getAllBookings, StoredBooking } from "@/lib/bookingService";
-import { getAllPGsWithOverrides } from "@/lib/dummyPGAdmin";
+import { listAllPGs } from "@/lib/pgService";
 import { PG } from "@/types/pg";
 import { AdminSidebar } from "./dashboard";
 import {
@@ -167,8 +167,8 @@ export default function AdminRevenue() {
     if (!hydrated) return;
     if (!user) { router.replace("/"); return; }
     if (user.role !== "platform_admin") { router.replace("/"); return; }
-    setAllPGs(getAllPGsWithOverrides());
     let cancelled = false;
+    listAllPGs().then((rows) => { if (!cancelled) setAllPGs(rows); }).catch(() => {});
     getAllBookings().then((rows) => { if (!cancelled) setBookings(rows); }).catch(() => {});
     return () => { cancelled = true; };
   }, [user, hydrated]);
