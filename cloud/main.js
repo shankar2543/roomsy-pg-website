@@ -185,6 +185,12 @@ Parse.Cloud.define("createPG", async (request) => {
   pg.set("owner", request.user);
 
   await pg.save(null, { useMasterKey: true });
+  await notifyAllPlatformAdmins({
+    type: "pg_submitted",
+    title: "New PG submitted for review",
+    body: `${pg.get("name")} (${pg.get("area")}) by ${request.user.get("name") || "an owner"} is awaiting approval.`,
+    link: `/admin/pgs/${pg.id}`,
+  });
   return { objectId: pg.id };
 });
 
@@ -210,6 +216,12 @@ Parse.Cloud.define("approvePG", async (request) => {
   pg.set("isApproved", true);
   pg.set("isSuspended", false);
   await pg.save(null, { useMasterKey: true });
+  await notifyUser(pg.get("owner"), {
+    type: "pg_approved",
+    title: "PG approved",
+    body: `${pg.get("name")} is now live for tenants to book.`,
+    link: `/pg-admin/my-pgs/${pg.id}`,
+  });
   return { ok: true };
 });
 
@@ -220,6 +232,12 @@ Parse.Cloud.define("suspendPG", async (request) => {
   const pg = await fetchPGOrThrow(pgId);
   pg.set("isSuspended", true);
   await pg.save(null, { useMasterKey: true });
+  await notifyUser(pg.get("owner"), {
+    type: "pg_suspended",
+    title: "PG suspended",
+    body: `${pg.get("name")} has been suspended by the admin team.`,
+    link: `/pg-admin/my-pgs/${pg.id}`,
+  });
   return { ok: true };
 });
 
@@ -230,6 +248,12 @@ Parse.Cloud.define("unsuspendPG", async (request) => {
   const pg = await fetchPGOrThrow(pgId);
   pg.set("isSuspended", false);
   await pg.save(null, { useMasterKey: true });
+  await notifyUser(pg.get("owner"), {
+    type: "pg_reinstated",
+    title: "PG reinstated",
+    body: `${pg.get("name")} is live again.`,
+    link: `/pg-admin/my-pgs/${pg.id}`,
+  });
   return { ok: true };
 });
 
@@ -310,6 +334,92 @@ Parse.Cloud.define("updatePGAmenities", async (request) => {
   return { ok: true };
 });
 
+// ─── Notifications ───────────────────────────────────────────────────────────
+// Internal helper used by lifecycle Cloud Functions to drop a row into the
+// recipient's inbox. Always called with master key; ACL restricts read/write
+// to the recipient (Cloud Functions still bypass via master key).
+
+async function notifyUser(recipient, payload) {
+  if (!recipient) return null;
+  const Notification = Parse.Object.extend("Notification");
+  const n = new Notification();
+  n.set("user", recipient);
+  n.set("type", String(payload.type || "info"));
+  n.set("title", String(payload.title || ""));
+  n.set("body", String(payload.body || ""));
+  if (payload.link) n.set("link", String(payload.link));
+  n.set("isRead", false);
+  const acl = new Parse.ACL();
+  acl.setPublicReadAccess(false);
+  acl.setPublicWriteAccess(false);
+  acl.setReadAccess(recipient.id, true);
+  acl.setWriteAccess(recipient.id, false);
+  n.setACL(acl);
+  await n.save(null, { useMasterKey: true });
+  return n;
+}
+
+async function notifyAllPlatformAdmins(payload) {
+  const q = new Parse.Query(Parse.User);
+  q.equalTo("role", "platform_admin");
+  const admins = await q.find({ useMasterKey: true });
+  await Promise.all(admins.map((a) => notifyUser(a, payload)));
+}
+
+Parse.Cloud.define("listMyNotifications", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const q = new Parse.Query("Notification");
+  q.equalTo("user", request.user);
+  q.descending("createdAt");
+  q.limit(100);
+  const rows = await q.find({ useMasterKey: true });
+  return rows.map((n) => ({
+    objectId: n.id,
+    type: n.get("type") || "info",
+    title: n.get("title") || "",
+    body: n.get("body") || "",
+    link: n.get("link") || null,
+    isRead: !!n.get("isRead"),
+    createdAt: n.get("createdAt"),
+  }));
+});
+
+Parse.Cloud.define("markNotificationRead", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const { notificationId } = request.params || {};
+  if (!notificationId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "notificationId required");
+  const q = new Parse.Query("Notification");
+  const n = await q.get(notificationId, { useMasterKey: true });
+  if (!n) throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, "Notification not found");
+  const owner = n.get("user");
+  if (!owner || owner.id !== request.user.id) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "Not your notification");
+  }
+  n.set("isRead", true);
+  await n.save(null, { useMasterKey: true });
+  return { ok: true };
+});
+
+Parse.Cloud.define("markAllNotificationsRead", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const q = new Parse.Query("Notification");
+  q.equalTo("user", request.user);
+  q.equalTo("isRead", false);
+  q.limit(1000);
+  const rows = await q.find({ useMasterKey: true });
+  await Promise.all(rows.map((n) => { n.set("isRead", true); return n.save(null, { useMasterKey: true }); }));
+  return { ok: true, count: rows.length };
+});
+
+Parse.Cloud.define("countUnreadNotifications", async (request) => {
+  if (!request.user) return { count: 0 };
+  const q = new Parse.Query("Notification");
+  q.equalTo("user", request.user);
+  q.equalTo("isRead", false);
+  const count = await q.count({ useMasterKey: true });
+  return { count };
+});
+
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 // One review per booking. Submitting again updates the existing review.
 // pg.rating is recomputed as the average of all reviews for that PG.
@@ -370,6 +480,13 @@ Parse.Cloud.define("submitReview", async (request) => {
   await review.save(null, { useMasterKey: true });
 
   await recomputePGRating(pg);
+
+  await notifyUser(booking.get("pgOwner"), {
+    type: "review_submitted",
+    title: "New review",
+    body: `${request.user.get("name") || "A guest"} left a ${review.get("stars")}-star review for ${pg.get("name")}.`,
+    link: `/pg-admin/my-pgs/${pg.id}`,
+  });
 
   return { ok: true, reviewId: review.id, rating: pg.get("rating") };
 });
@@ -514,6 +631,12 @@ Parse.Cloud.define("createBooking", async (request) => {
   b.setACL(bookingAcl(request.user, owner));
 
   await b.save(null, { useMasterKey: true });
+  await notifyUser(owner, {
+    type: "booking_requested",
+    title: "New booking request",
+    body: `${request.user.get("name") || "A tenant"} wants to book ${pg.get("name")}.`,
+    link: `/pg-admin/bookings`,
+  });
   return { objectId: b.id };
 });
 
@@ -547,6 +670,12 @@ Parse.Cloud.define("confirmBooking", async (request) => {
   await b.save(null, { useMasterKey: true });
   const pg = b.get("pg");
   if (pg) await changeAvailableBeds(pg, -1);
+  await notifyUser(b.get("user"), {
+    type: "booking_confirmed",
+    title: "Booking confirmed",
+    body: `Your stay at ${b.get("pgName")} is confirmed.`,
+    link: `/bookings`,
+  });
   return { ok: true };
 });
 
@@ -557,6 +686,12 @@ Parse.Cloud.define("rejectBooking", async (request) => {
   await requireBookingPGOwner(request, b);
   b.set("status", "rejected");
   await b.save(null, { useMasterKey: true });
+  await notifyUser(b.get("user"), {
+    type: "booking_rejected",
+    title: "Booking declined",
+    body: `Your request for ${b.get("pgName")} was declined.`,
+    link: `/bookings`,
+  });
   return { ok: true };
 });
 
@@ -564,7 +699,7 @@ Parse.Cloud.define("cancelBooking", async (request) => {
   const bookingId = request.params && request.params.bookingId;
   if (!bookingId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "bookingId required");
   const b = await fetchBookingOrThrow(bookingId);
-  await requireBookingCustomerOrOwner(request, b);
+  const { isCustomer } = await requireBookingCustomerOrOwner(request, b);
   const wasConfirmed = b.get("status") === "confirmed";
   b.set("status", "cancelled");
   await b.save(null, { useMasterKey: true });
@@ -572,6 +707,16 @@ Parse.Cloud.define("cancelBooking", async (request) => {
     const pg = b.get("pg");
     if (pg) await changeAvailableBeds(pg, +1);
   }
+  // Notify whichever party didn't initiate the cancel.
+  const recipient = isCustomer ? b.get("pgOwner") : b.get("user");
+  await notifyUser(recipient, {
+    type: "booking_cancelled",
+    title: "Booking cancelled",
+    body: isCustomer
+      ? `${request.user.get("name") || "The tenant"} cancelled their booking at ${b.get("pgName")}.`
+      : `Your booking at ${b.get("pgName")} was cancelled by the owner.`,
+    link: isCustomer ? `/pg-admin/bookings` : `/bookings`,
+  });
   return { ok: true };
 });
 
@@ -588,6 +733,12 @@ Parse.Cloud.define("vacateBooking", async (request) => {
     const pg = b.get("pg");
     if (pg) await changeAvailableBeds(pg, +1);
   }
+  await notifyUser(b.get("user"), {
+    type: "stay_completed",
+    title: "Stay marked complete",
+    body: `Your stay at ${b.get("pgName")} is wrapped up — share a quick rating?`,
+    link: `/bookings`,
+  });
   return { ok: true };
 });
 

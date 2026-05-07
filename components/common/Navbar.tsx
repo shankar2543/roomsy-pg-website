@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  HiOutlineMenu, HiUserCircle, HiX, HiOutlineBell,
+  HiOutlineMenu, HiUserCircle, HiX,
   HiOutlineUser, HiOutlineHeart, HiOutlineCalendar,
   HiOutlineViewGrid, HiOutlineLogout, HiChevronRight,
   HiSparkles, HiHome, HiOfficeBuilding, HiUsers, HiCurrencyRupee,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/useAuthStore";
+import NotificationBell from "@/components/common/NotificationBell";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -229,32 +230,7 @@ export default function Navbar() {
           )}
 
           {/* Notification bell — only when logged in */}
-          {user && (
-            <button
-              className="notif-icon-btn"
-              onClick={() => toast("No new notifications")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "42px",
-                height: "42px",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                padding: 0,
-                position: "relative",
-                borderRadius: "50%",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#F5F3F0")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              aria-label="Notifications"
-            >
-              <HiOutlineBell size={22} color="#1C1917" />
-              <span className="notif-dot" />
-            </button>
-          )}
+          <NotificationBell />
 
           {/* Desktop: profile icon — picture, initials, or fallback */}
           <button

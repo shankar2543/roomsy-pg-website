@@ -15,6 +15,7 @@ import {
   HiOutlineLogout, HiOutlineMenu, HiOutlineUser, HiArrowLeft,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import NotificationBell from "@/components/common/NotificationBell";
 import { MdMeetingRoom } from "react-icons/md";
 
 const NAV_ITEMS = [
@@ -223,14 +224,7 @@ function Sidebar({ active }: { active: string }) {
           </Link>
         </div>
         <div className="pg-topbar-right">
-          <button
-            onClick={() => toast("No new notifications")}
-            aria-label="Notifications"
-            className="pg-topbar-bell"
-          >
-            <HiOutlineBell size={22} color="#1C1917" />
-            <span className="pg-topbar-bell-dot" />
-          </button>
+          <NotificationBell />
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import {
   HiOutlineUser,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import NotificationBell from "@/components/common/NotificationBell";
 
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <HiHome size={20} />,           iconSm: <HiHome size={22} /> },
@@ -97,27 +98,26 @@ function AdminSidebar({ active }: { active: string }) {
             );
           })}
 
-          <button
-            onClick={() => toast("No new notifications")}
+          <Link
+            href="/notifications"
             style={{
               display: "flex", alignItems: "center", gap: "12px",
               padding: "11px 14px", borderRadius: "11px",
-              backgroundColor: "transparent", border: "none",
+              backgroundColor: "transparent",
               color: "#44403C", fontFamily: "var(--font-body)",
               fontSize: "15px", fontWeight: "500",
               marginBottom: "3px", marginTop: "2px",
-              cursor: "pointer", width: "100%", textAlign: "left",
+              textDecoration: "none",
               transition: "all 0.15s",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F9F7F4"; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
-            <span style={{ position: "relative", color: "#78716C", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#78716C", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <HiOutlineBell size={20} />
-              <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: "#FF385C", border: "2px solid #FFF5F0" }} />
             </span>
             Notifications
-          </button>
+          </Link>
         </div>
 
         <div style={{ marginTop: "auto", borderTop: "1px solid #F0EDE8", padding: "20px 24px" }}>
@@ -145,14 +145,7 @@ function AdminSidebar({ active }: { active: string }) {
           <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "600", color: "#1C1917" }}>Roomsy</span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <button
-            onClick={() => toast("No new notifications")}
-            aria-label="Notifications"
-            style={{ position: "relative", border: "none", background: "transparent", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36 }}
-          >
-            <HiOutlineBell size={22} color="#1C1917" />
-            <span style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "#FF385C", border: "2px solid #fff" }} />
-          </button>
+          <NotificationBell size={36} />
           <Link
             href="/profile"
             aria-label="My Profile"
