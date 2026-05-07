@@ -127,7 +127,7 @@ function Sidebar({ active }: { active: string }) {
       {/* Desktop sidebar */}
       <aside className="pg-sidebar">
         <div className="pg-sidebar-head">
-          <Link href="/" className="pg-sidebar-brand">
+          <Link href="/pg-admin/dashboard" className="pg-sidebar-brand">
             <div className="pg-sidebar-logo">R</div>
             <span>Roomsy</span>
           </Link>
@@ -218,7 +218,7 @@ function Sidebar({ active }: { active: string }) {
           >
             <HiOutlineMenu size={22} />
           </button>
-          <Link href="/" className="pg-topbar-brand">
+          <Link href="/pg-admin/dashboard" className="pg-topbar-brand">
             <div className="pg-topbar-logo">R</div>
             <span>Roomsy</span>
           </Link>
@@ -371,19 +371,22 @@ export default function PGAdminDashboard() {
                 Here&apos;s what&apos;s happening with your PGs today.
               </p>
             </div>
-            <Link
-              href="/profile"
-              aria-label="My Profile"
-              title="My Profile"
-              className="dash-hero-avatar"
-            >
-              {user.profilePic ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.profilePic} alt={user.name || "Profile"} />
-              ) : (
-                <span>{getInitials(user.name || user.email)}</span>
-              )}
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <NotificationBell iconColor="#fff" hoverBg="rgba(255,255,255,0.12)" size={40} />
+              <Link
+                href="/profile"
+                aria-label="My Profile"
+                title="My Profile"
+                className="dash-hero-avatar"
+              >
+                {user.profilePic ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.profilePic} alt={user.name || "Profile"} />
+                ) : (
+                  <span>{getInitials(user.name || user.email)}</span>
+                )}
+              </Link>
+            </div>
           </div>
 
           <div className="pg-content">

@@ -101,8 +101,17 @@ export default function Navbar() {
           gap: "24px",
         }}
       >
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+        {/* Logo — points to the user's home dashboard */}
+        <Link
+          href={
+            user?.role === "pg_admin"
+              ? "/pg-admin/dashboard"
+              : user?.role === "platform_admin"
+                ? "/admin/dashboard"
+                : "/"
+          }
+          style={{ textDecoration: "none", flexShrink: 0 }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div
               style={{
