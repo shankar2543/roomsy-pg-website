@@ -10,8 +10,10 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getBookingsForUser, cancelBooking, StoredBooking } from "@/lib/bookingService";
 import {
   HiLocationMarker, HiCalendar, HiArrowLeft, HiChevronDown,
+  HiStar, HiOutlineStar, HiX,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { submitReview } from "@/lib/reviewService";
 
 type StatusFilter = "all" | "pending" | "confirmed" | "completed" | "cancelled" | "rejected";
 
@@ -56,9 +58,18 @@ function endDateForBooking(b: StoredBooking): string {
   return b.toDate || "";
 }
 
-function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: (id: string) => void }) {
+function BookingCard({
+  booking,
+  onCancel,
+  onRate,
+}: {
+  booking: StoredBooking;
+  onCancel: (id: string) => void;
+  onRate: (booking: StoredBooking) => void;
+}) {
   const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
   const canCancel = booking.status === "pending" || booking.status === "confirmed";
+  const canRate = booking.status === "completed";
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -132,6 +143,11 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
               {canCancel && (
                 <button onClick={() => onCancel(booking.objectId)} className="bk-btn bk-btn-danger">
                   Cancel booking
+                </button>
+              )}
+              {canRate && (
+                <button onClick={() => onRate(booking)} className="bk-btn bk-btn-primary">
+                  Rate this stay
                 </button>
               )}
             </footer>
@@ -436,6 +452,112 @@ function BookingCard({ booking, onCancel }: { booking: StoredBooking; onCancel: 
   );
 }
 
+function RateStayModal({
+  booking,
+  onClose,
+  onSubmitted,
+}: {
+  booking: StoredBooking;
+  onClose: () => void;
+  onSubmitted: () => void;
+}) {
+  const [stars, setStars] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    if (stars < 1) {
+      toast.error("Please pick a star rating.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await submitReview({ bookingId: booking.objectId, stars, comment: comment.trim() });
+      toast.success("Thanks — your review is in.");
+      onSubmitted();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not submit review");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, zIndex: 1000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff", borderRadius: 16, width: "100%", maxWidth: 440,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25)", overflow: "hidden",
+        }}
+      >
+        <header style={{ padding: "18px 20px", borderBottom: "1px solid #F0EDE8", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: "#1C1917", margin: 0 }}>Rate your stay</h3>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#78716C", margin: "2px 0 0" }}>{booking.pgName}</p>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "#F5F3F0", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <HiX size={16} />
+          </button>
+        </header>
+
+        <div style={{ padding: 20 }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#1C1917", marginBottom: 10 }}>How was it?</p>
+          <div style={{ display: "flex", gap: 4, marginBottom: 18 }}>
+            {[1, 2, 3, 4, 5].map((n) => {
+              const filled = n <= (hover || stars);
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onMouseEnter={() => setHover(n)}
+                  onMouseLeave={() => setHover(0)}
+                  onClick={() => setStars(n)}
+                  aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: filled ? "#F59E0B" : "#D6D3CE" }}
+                >
+                  {filled ? <HiStar size={32} /> : <HiOutlineStar size={32} />}
+                </button>
+              );
+            })}
+          </div>
+
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#1C1917", marginBottom: 6 }}>Comment <span style={{ color: "#A8A29E", fontWeight: 400 }}>(optional)</span></p>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value.slice(0, 1000))}
+            placeholder="Anything future tenants should know?"
+            rows={4}
+            style={{
+              width: "100%", border: "1.5px solid #E8E4DE", borderRadius: 10,
+              padding: "10px 12px", fontFamily: "var(--font-body)", fontSize: 14,
+              color: "#1C1917", outline: "none", background: "#FAFAF9",
+              resize: "vertical", boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <footer style={{ padding: "14px 20px", borderTop: "1px solid #F0EDE8", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button onClick={onClose} disabled={submitting} style={{ padding: "10px 16px", borderRadius: 100, border: "1.5px solid #E8E4DE", background: "#fff", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "#1C1917", cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button onClick={handleSubmit} disabled={submitting} style={{ padding: "10px 18px", borderRadius: 100, border: "none", background: submitting ? "#FDBA74" : "#FF385C", color: "#fff", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, cursor: submitting ? "not-allowed" : "pointer" }}>
+            {submitting ? "Submitting…" : "Submit"}
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 export default function MyBookingsPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -463,6 +585,8 @@ export default function MyBookingsPage() {
       toast.error(e instanceof Error ? e.message : "Could not cancel");
     }
   }
+
+  const [rateTarget, setRateTarget] = useState<StoredBooking | null>(null);
 
   const filtered = statusFilter === "all"
     ? bookings
@@ -522,7 +646,7 @@ export default function MyBookingsPage() {
           ) : filtered.length > 0 ? (
             <div className="bk-list">
               {filtered.map((b) => (
-                <BookingCard key={b.objectId} booking={b} onCancel={handleCancel} />
+                <BookingCard key={b.objectId} booking={b} onCancel={handleCancel} onRate={setRateTarget} />
               ))}
             </div>
           ) : bookings.length === 0 ? (
@@ -543,6 +667,14 @@ export default function MyBookingsPage() {
           )}
         </div>
       </main>
+
+      {rateTarget && (
+        <RateStayModal
+          booking={rateTarget}
+          onClose={() => setRateTarget(null)}
+          onSubmitted={() => setRateTarget(null)}
+        />
+      )}
 
       <Footer />
 

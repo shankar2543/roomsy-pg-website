@@ -310,6 +310,91 @@ Parse.Cloud.define("updatePGAmenities", async (request) => {
   return { ok: true };
 });
 
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+// One review per booking. Submitting again updates the existing review.
+// pg.rating is recomputed as the average of all reviews for that PG.
+
+async function recomputePGRating(pg) {
+  const q = new Parse.Query("Review");
+  q.equalTo("pg", pg);
+  q.limit(10000);
+  const all = await q.find({ useMasterKey: true });
+  if (all.length === 0) {
+    pg.set("rating", 0);
+  } else {
+    const sum = all.reduce((s, r) => s + (r.get("stars") || 0), 0);
+    const avg = Math.round((sum / all.length) * 10) / 10;
+    pg.set("rating", avg);
+  }
+  await pg.save(null, { useMasterKey: true });
+}
+
+Parse.Cloud.define("submitReview", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const { bookingId, stars, comment } = request.params || {};
+  if (!bookingId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "bookingId required");
+  if (typeof stars !== "number" || stars < 1 || stars > 5) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, "stars must be a number between 1 and 5");
+  }
+
+  const booking = await fetchBookingOrThrow(bookingId);
+  const customer = booking.get("user");
+  if (!customer || customer.id !== request.user.id) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "You can only review your own bookings");
+  }
+  if (booking.get("status") !== "completed") {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "You can only review a completed stay");
+  }
+
+  const pg = booking.get("pg");
+  if (!pg) throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, "PG not found for this booking");
+
+  // Find existing review for this booking, or create new
+  const eq = new Parse.Query("Review");
+  eq.equalTo("booking", booking);
+  let review = await eq.first({ useMasterKey: true });
+
+  if (!review) {
+    const Review = Parse.Object.extend("Review");
+    review = new Review();
+    review.set("booking", booking);
+    review.set("user", request.user);
+    review.set("pg", pg);
+    const acl = new Parse.ACL();
+    acl.setPublicReadAccess(true);
+    acl.setPublicWriteAccess(false);
+    review.setACL(acl);
+  }
+  review.set("stars", Math.round(Number(stars)));
+  if (typeof comment === "string") review.set("comment", comment.trim().slice(0, 1000));
+  await review.save(null, { useMasterKey: true });
+
+  await recomputePGRating(pg);
+
+  return { ok: true, reviewId: review.id, rating: pg.get("rating") };
+});
+
+Parse.Cloud.define("getReviewForBooking", async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Login required");
+  const { bookingId } = request.params || {};
+  if (!bookingId) throw new Parse.Error(Parse.Error.INVALID_QUERY, "bookingId required");
+  const booking = await fetchBookingOrThrow(bookingId);
+  const customer = booking.get("user");
+  if (!customer || customer.id !== request.user.id) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, "Not your booking");
+  }
+  const q = new Parse.Query("Review");
+  q.equalTo("booking", booking);
+  const r = await q.first({ useMasterKey: true });
+  if (!r) return null;
+  return {
+    objectId: r.id,
+    stars: r.get("stars") || 0,
+    comment: r.get("comment") || "",
+    createdAt: r.get("createdAt"),
+  };
+});
+
 // ─── Wishlist ────────────────────────────────────────────────────────────────
 // Single Wishlist row per user, stored as { user, pgIds: [] }.
 
