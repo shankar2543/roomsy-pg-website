@@ -525,7 +525,7 @@ export default function PGsPage() {
 
         {/* ── PG Type Tab Bar ── */}
         <div className="pg-tab-wrap" style={{ backgroundColor: "#fff", borderBottom: "1px solid #E8E4DE", position: "sticky", top: "72px", zIndex: 40 }}>
-          <div className="pg-tab-bar" style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: "4px" }}>
+          <div className="pg-tab-bar" style={{ width: "100%", margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", gap: "4px" }}>
             {PG_TABS.map((tab) => {
               const active = selectedPgType === tab.value;
               return (
@@ -554,7 +554,7 @@ export default function PGsPage() {
         </div>
 
         {/* Body: sidebar + list */}
-        <div className="pg-body" style={{ maxWidth: "1280px", margin: "0 auto", padding: "28px 24px 64px", display: "flex", gap: "24px", alignItems: "flex-start" }}>
+        <div className="pg-body" style={{ width: "100%", margin: "0 auto", padding: "28px 20px 64px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
 
           {/* ── Sidebar ── */}
           <aside
