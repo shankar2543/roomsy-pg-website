@@ -11,8 +11,8 @@
   --color-border: #E8E4DE;
   --color-success: #15803D;
 
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-display: "Quicksand", system-ui, -apple-system, sans-serif;
+  --font-body: "Quicksand", system-ui, -apple-system, sans-serif;
 
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
   --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.1);
@@ -26,16 +26,53 @@
 html {
   background-color: #F9F7F4;
   color: #1C1917;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 500;          /* tinmen runs body at medium */
+  line-height: 1.5;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
 }
 
+body {
+  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #1C1917;
+}
+
+p {
+  margin: 0;
+  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;          /* leading-relaxed, matches tinmen body copy */
+  color: #1C1917;
+}
+
+small,
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+a, button, input, select, textarea {
+  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+}
+
+strong, b {
+  font-weight: 700;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;        /* prevent stray horizontal scroll that leaves a gap on the right of full-bleed sections */
 }
 
 /* Reduce motion for users who prefer it */
@@ -62,8 +99,42 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-h1, h2, h3 {
-  font-family: "Fraunces", Georgia, serif;
+/* Heading scale — Quicksand, modelled on tinmen.ai's typography */
+h1, h2, h3, h4 {
+  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  color: #1C1917;
+}
+h1 {
+  font-size: 4.25rem;       /* 68px */
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+h2 {
+  font-size: 3rem;          /* 48px */
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+h3 {
+  font-size: 1.875rem;      /* 30px */
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+h4 {
+  font-size: 1.25rem;       /* 20px */
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: 2.75rem; }   /* 44px */
+  h2 { font-size: 2.25rem; }   /* 36px */
+  h3 { font-size: 1.5rem; }    /* 24px */
+  h4 { font-size: 1.125rem; }  /* 18px */
 }
 
 ::selection {

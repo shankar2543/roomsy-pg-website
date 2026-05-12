@@ -1,17 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   HiShieldCheck, HiCurrencyRupee, HiLocationMarker, HiSearch,
   HiChevronLeft, HiChevronRight, HiCalendar,
 } from "react-icons/hi";
 import { MdOutlineVerified } from "react-icons/md";
-
-const IMAGES = [
-  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=85",
-  "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&q=85",
-  "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=700&q=85",
-];
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -283,7 +277,6 @@ export default function Main() {
   const [fromDate, setFromDate]       = useState("");
   const [toDate, setToDate]           = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [lightbox, setLightbox]       = useState<string | null>(null);
   const dateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -311,17 +304,33 @@ export default function Main() {
     : "Select dates";
 
   return (
-    <section id="home" style={{ backgroundColor: "#F9F7F4", paddingTop: "72px", overflow: "hidden" }}>
-      {/* Dot grid */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.5 }}
-        transition={{ duration: 1.2 }}
+    <section
+      id="home"
+      style={{
+        backgroundColor: "#1C1917",
+        paddingTop: "72px",
+        overflow: "hidden",
+        position: "relative",
+        width: "100%",
+        marginLeft: 0,
+        marginRight: 0,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/roomsy_main_bg.png"
+        alt=""
+        aria-hidden="true"
         style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(circle, #E8E4DE 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none", zIndex: 0,
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center right",
+          zIndex: 0,
+          pointerEvents: "none",
+          display: "block",
         }}
       />
 
@@ -331,7 +340,7 @@ export default function Main() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease, delay: 0.1 }}
         style={{
-          position: "relative", zIndex: 10, backgroundColor: "#F9F7F4",
+          position: "relative", zIndex: 10, backgroundColor: "transparent",
           padding: "20px 16px 12px", display: "flex", justifyContent: "center",
         }}
       >
@@ -409,7 +418,7 @@ export default function Main() {
       <div
         style={{
           maxWidth: "1280px", margin: "0 auto", padding: "32px 24px 80px",
-          display: "grid", gridTemplateColumns: "1fr 1fr", gap: "64px",
+          display: "grid", gridTemplateColumns: "1fr", gap: "64px",
           alignItems: "center", position: "relative", zIndex: 1,
         }}
         className="hero-grid"
@@ -432,8 +441,9 @@ export default function Main() {
 
           <motion.h1 variants={fadeUp} style={{
             fontFamily: "var(--font-display)", fontSize: "clamp(38px, 5.5vw, 72px)",
-            fontWeight: "600", color: "#1C1917", lineHeight: "1.08",
+            fontWeight: "600", color: "#fff", lineHeight: "1.08",
             letterSpacing: "-2px", marginBottom: "24px",
+            textShadow: "0 2px 12px rgba(0,0,0,0.35)",
           }}>
             Find your
             <br />
@@ -457,8 +467,9 @@ export default function Main() {
           </motion.h1>
 
           <motion.p variants={fadeUp} style={{
-            fontFamily: "var(--font-body)", fontSize: "16px", color: "#78716C",
+            fontFamily: "var(--font-body)", fontSize: "16px", color: "rgba(255,255,255,0.9)",
             lineHeight: "1.7", marginBottom: "36px", maxWidth: "420px",
+            textShadow: "0 1px 8px rgba(0,0,0,0.4)",
           }}>
             Discover verified PG accommodations with flexible daily, weekly, and monthly stays — without brokerage.
           </motion.p>
@@ -490,12 +501,12 @@ export default function Main() {
               <motion.div key={i} variants={fadeUp} style={{
                 paddingRight: i < 2 ? "32px" : 0,
                 paddingLeft: i > 0 ? "32px" : 0,
-                borderRight: i < 2 ? "1px solid #E8E4DE" : "none",
+                borderRight: i < 2 ? "1px solid rgba(255,255,255,0.25)" : "none",
               }}>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: "600", color: "#1C1917", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: "600", color: "#fff", letterSpacing: "-0.5px", lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
                   {stat.value}
                 </div>
-                <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#78716C", marginTop: "4px" }}>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "rgba(255,255,255,0.8)", marginTop: "4px", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
                   {stat.label}
                 </div>
               </motion.div>
@@ -503,99 +514,11 @@ export default function Main() {
           </motion.div>
         </motion.div>
 
-        {/* RIGHT — Image collage */}
-        <div style={{ position: "relative", height: "560px" }} className="hero-images">
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            style={{
-              position: "absolute", top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)", width: "360px", height: "360px",
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(249,115,22,0.14) 0%, transparent 70%)",
-              pointerEvents: "none",
-            }}
-          />
-          <motion.div
-            initial={{ opacity: 0, x: 60, scale: 0.92 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.9, ease, delay: 0.3 }}
-            onClick={() => setLightbox(IMAGES[0])}
-            whileHover={{ scale: 1.02 }}
-            style={{ position: "absolute", top: "0", right: "0", width: "78%", height: "68%", borderRadius: "24px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", cursor: "zoom-in" }}
-          >
-            <motion.img
-              src={IMAGES[0]} alt="PG Room"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              style={{ width: "100%", height: "110%", objectFit: "cover" }}
-            />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: -40, y: 40 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.55 }}
-            onClick={() => setLightbox(IMAGES[1])}
-            whileHover={{ scale: 1.03 }}
-            style={{ position: "absolute", bottom: "0", left: "0", width: "46%", height: "40%", borderRadius: "20px", overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", cursor: "zoom-in" }}
-          >
-            <img src={IMAGES[1]} alt="PG Room" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 40, y: 40 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.7 }}
-            onClick={() => setLightbox(IMAGES[2])}
-            whileHover={{ scale: 1.03 }}
-            style={{ position: "absolute", bottom: "0", right: "0", width: "46%", height: "40%", borderRadius: "20px", overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", cursor: "zoom-in" }}
-          >
-            <img src={IMAGES[2]} alt="PG Room" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </motion.div>
-        </div>
       </div>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightbox && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={() => setLightbox(null)}
-            style={{ position: "fixed", inset: 0, zIndex: 1000, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
-          >
-            <motion.div
-              initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.88, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 28 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{ position: "relative", maxWidth: "900px", width: "100%", borderRadius: "20px", overflow: "hidden", boxShadow: "0 40px 120px rgba(0,0,0,0.5)" }}
-            >
-              <img src={lightbox} alt="PG Room" style={{ width: "100%", display: "block", maxHeight: "80vh", objectFit: "cover" }} />
-              <motion.button
-                onClick={() => setLightbox(null)}
-                whileHover={{ scale: 1.1, backgroundColor: "#FF385C" }}
-                whileTap={{ scale: 0.95 }}
-                style={{ position: "absolute", top: "14px", right: "14px", width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.55)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "18px", lineHeight: 1 }}
-              >
-                ×
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <style>{`
-        /* Desktop polish: gentle hero-image float */
-        @media (min-width: 769px) {
-          .hero-images img {
-            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) !important;
-          }
-          .hero-images > div:hover img {
-            transform: scale(1.03);
-          }
-        }
         @media (max-width: 768px) {
-          .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; padding: 32px 16px 56px !important; }
-          .hero-images { display: none !important; }
+          .hero-grid { gap: 32px !important; padding: 32px 16px 56px !important; }
         }
         @media (max-width: 540px) {
           .search-filters { display: none !important; }

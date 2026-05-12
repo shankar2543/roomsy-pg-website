@@ -26,6 +26,10 @@ export default function Navbar() {
   const onPgsRoute = router.pathname === "/pgs" || router.pathname.startsWith("/pgs/");
   const activeLink = onPgsRoute ? "pg" : activeSection;
 
+  // Landing page gets a transparent navbar over the hero until the user scrolls
+  const onLanding = router.pathname === "/";
+  const transparent = onLanding && !scrolled;
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
@@ -81,11 +85,13 @@ export default function Navbar() {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: scrolled
-          ? "linear-gradient(135deg, rgba(255,228,234,0.92) 0%, rgba(255,245,240,0.92) 55%, rgba(253,252,250,0.92) 100%)"
-          : "linear-gradient(135deg, #FFE4EA 0%, #FFF5F0 55%, #FDFCFA 100%)",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: "1px solid rgba(232, 228, 222, 0.6)",
+        background: transparent
+          ? "transparent"
+          : scrolled
+            ? "linear-gradient(135deg, rgba(255,228,234,0.92) 0%, rgba(255,245,240,0.92) 55%, rgba(253,252,250,0.92) 100%)"
+            : "linear-gradient(135deg, #FFE4EA 0%, #FFF5F0 55%, #FDFCFA 100%)",
+        backdropFilter: !transparent && scrolled ? "blur(12px)" : "none",
+        borderBottom: transparent ? "1px solid transparent" : "1px solid rgba(232, 228, 222, 0.6)",
         transition: "all 0.3s ease",
       }}
     >
@@ -141,8 +147,9 @@ export default function Navbar() {
                 fontFamily: "var(--font-display)",
                 fontSize: "22px",
                 fontWeight: "600",
-                color: "#1C1917",
+                color: transparent ? "#FF385C" : "#1C1917",
                 letterSpacing: "-0.3px",
+                transition: "color 0.3s ease",
               }}
             >
               Roomsy
@@ -198,15 +205,15 @@ export default function Navbar() {
                   fontFamily: "var(--font-body)",
                   fontSize: "16px",
                   fontWeight: activeLink === "pg" ? "600" : "500",
-                  color: activeLink === "pg" ? "#FF385C" : "#1C1917",
+                  color: transparent ? "#fff" : (activeLink === "pg" ? "#FF385C" : "#1C1917"),
                   textDecoration: "none",
                   padding: "8px 16px",
                   borderRadius: "100px",
-                  backgroundColor: activeLink === "pg" ? "#FFF0F3" : "transparent",
-                  transition: "background 0.15s, color 0.15s",
+                  backgroundColor: transparent ? "transparent" : (activeLink === "pg" ? "#FFF0F3" : "transparent"),
+                  transition: "background 0.15s, color 0.3s",
                 }}
-                onMouseEnter={(e) => { if (activeSection !== "pg") e.currentTarget.style.backgroundColor = "#F0EDE8"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = activeLink === "pg" ? "#FFF0F3" : "transparent"; }}
+                onMouseEnter={(e) => { if (!transparent && activeSection !== "pg") e.currentTarget.style.backgroundColor = "#F0EDE8"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = transparent ? "transparent" : (activeLink === "pg" ? "#FFF0F3" : "transparent"); }}
               >
                 PG
               </Link>

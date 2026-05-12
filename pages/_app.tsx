@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import { initParse } from "@/lib/parseConfig";
 import { useAuthStore } from "@/store/useAuthStore";
 import "@/styles/globals.css";
@@ -16,15 +16,17 @@ const OG_IMAGE  = `${SITE_URL}/apple-touch-icon.png`;
 
 initParse();
 
-const fraunces = Fraunces({
+const quicksandDisplay = Quicksand({
   subsets: ["latin"],
   variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const quicksandBody = Quicksand({
   subsets: ["latin"],
   variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -51,7 +53,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [restoreSession, router.events]);
 
   return (
-    <main className={`${fraunces.variable} ${dmSans.variable}`}>
+    <main className={`${quicksandDisplay.variable} ${quicksandBody.variable}`}>
       <Head>
         {/* Primary */}
         <title>{`${SITE_NAME} — Find Verified PGs Across India`}</title>
