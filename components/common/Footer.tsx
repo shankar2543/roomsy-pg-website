@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HiLocationMarker, HiPhone, HiMail, HiChevronRight } from "react-icons/hi";
-import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
 
 function ColTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -41,8 +41,6 @@ function ContactRow({ icon, children }: { icon: React.ReactNode; children: React
 const SOCIAL = [
   { icon: <FaFacebookF size={14} />, href: "#" },
   { icon: <FaInstagram size={14} />, href: "#" },
-  { icon: <FaTwitter size={14} />, href: "#" },
-  { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
 export default function Footer() {
