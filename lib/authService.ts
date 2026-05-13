@@ -42,17 +42,41 @@ export async function signupUser(params: {
   return toAppUser(u);
 }
 
+/**
+ * If `id` looks like a phone number (no @, mostly digits with optional +, spaces,
+ * dashes, or parens), strip it down to the canonical 10-digit local form used
+ * by stored User.phone values. Returns null when the input doesn't look like a
+ * phone number, so callers fall through to treating it as an email.
+ *
+ * Handles:
+ *   "9876543210"        → "9876543210"
+ *   "+91 9876543210"    → "9876543210"
+ *   "+91-98765-43210"   → "9876543210"
+ *   "(987) 654-3210"    → "9876543210"
+ *   "09876543210"       → "9876543210"  (leading 0 dropped, common in India)
+ */
+function normalisePhone(id: string): string | null {
+  if (id.includes("@")) return null;
+  const digits = id.replace(/\D/g, "");
+  if (digits.length === 0) return null;
+  // Drop +91 country code (12 digits starting with 91) or leading 0 (11 digits).
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0"))  return digits.slice(1);
+  // Anything else that's pure digits is treated as a phone number.
+  return digits;
+}
+
 export async function loginUser(params: {
   identifier: string;
   password: string;
   role: Role | Role[];
 }): Promise<AppUser> {
   const id = params.identifier.trim();
-  const isPhone = /^\d+$/.test(id);
+  const phone = normalisePhone(id);
 
   let email = id;
-  if (isPhone) {
-    const res = (await Parse.Cloud.run("findEmailByPhone", { phone: id })) as
+  if (phone) {
+    const res = (await Parse.Cloud.run("findEmailByPhone", { phone })) as
       | { email: string }
       | null;
     if (!res || !res.email) throw new Error("No account found with those details.");

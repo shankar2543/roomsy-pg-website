@@ -238,10 +238,13 @@ export default function Login() {
                     </span>
                     <input
                       type="tel"
-                      inputMode="numeric"
+                      inputMode="tel"
                       placeholder="98765 43210"
                       value={identifier}
-                      onChange={(e) => { if (/^\d*$/.test(e.target.value) && e.target.value.length <= 10) setIdentifier(e.target.value); }}
+                      // Accept spaces, dashes, parens, and a leading +91 paste —
+                      // authService.loginUser normalises before lookup. Cap at
+                      // 18 chars so the field can't grow unbounded.
+                      onChange={(e) => { if (e.target.value.length <= 18) setIdentifier(e.target.value); }}
                       required
                       style={{ ...inputStyle, border: "none", borderRadius: 0, backgroundColor: "transparent", flex: 1 }}
                     />
