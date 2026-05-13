@@ -6,6 +6,8 @@ import { signupUser } from "@/lib/authService";
 import { useAuthStore } from "@/store/useAuthStore";
 import toast from "react-hot-toast";
 
+type Role = "customer" | "pg_admin";
+
 export default function Signup() {
   const router = useRouter();
   const isPgAdmin = router.query.role === "pg_admin";
@@ -15,17 +17,21 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role] = useState(isPgAdmin ? "pg_admin" : "customer");
+  const [role, setRole] = useState<Role>(isPgAdmin ? "pg_admin" : "customer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length !== 10) { setError("Enter a valid 10-digit phone number."); return; }
+    // Strip everything but digits, then drop +91 / leading 0 if present.
+    let digits = phone.replace(/\D/g, "");
+    if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+    if (digits.length === 11 && digits.startsWith("0"))  digits = digits.slice(1);
+    if (digits.length !== 10) { setError("Enter a valid 10-digit phone number."); return; }
     setLoading(true);
     setError("");
     try {
-      const user = await signupUser({ name, email, phone, password, role: role as "customer" | "pg_admin" });
+      const user = await signupUser({ name, email, phone: digits, password, role });
       setUser(user);
       toast.success("Account created! Welcome to Roomsy.");
       if (user.role === "pg_admin") {
@@ -146,12 +152,49 @@ export default function Signup() {
                 fontWeight: "600",
                 color: "#1C1917",
                 textAlign: "center",
-                marginBottom: "28px",
+                marginBottom: "20px",
                 letterSpacing: "-0.3px",
               }}
             >
-              Create your account
+              {role === "pg_admin" ? "List your PG with Roomsy" : "Create your account"}
             </h1>
+
+            {/* Role toggle */}
+            <div style={{ marginBottom: "18px" }}>
+              <label style={{ ...labelStyle, marginBottom: "8px" }}>I want to</label>
+              <div role="tablist" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", padding: "4px", backgroundColor: "#F5F3F0", borderRadius: "100px" }}>
+                {([
+                  { value: "customer", label: "Find a PG" },
+                  { value: "pg_admin", label: "List my PG" },
+                ] as { value: Role; label: string }[]).map((r) => {
+                  const active = role === r.value;
+                  return (
+                    <button
+                      key={r.value}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setRole(r.value)}
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: "100px",
+                        border: "none",
+                        backgroundColor: active ? "#fff" : "transparent",
+                        color: active ? "#FF385C" : "#78716C",
+                        fontFamily: "var(--font-body)",
+                        fontSize: "13px",
+                        fontWeight: active ? 700 : 500,
+                        cursor: "pointer",
+                        boxShadow: active ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {r.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {error && (
               <div
@@ -211,9 +254,13 @@ export default function Signup() {
                   </span>
                   <input
                     type="tel"
+                    inputMode="tel"
                     placeholder="98765 43210"
                     value={phone}
-                    onChange={(e) => { if (/^\d*$/.test(e.target.value) && e.target.value.length <= 10) setPhone(e.target.value); }}
+                    // Accept spaces, dashes, parens, +91 prefix — handleSubmit
+                    // normalises before signup. Cap at 18 chars so the field
+                    // can't grow unbounded.
+                    onChange={(e) => { if (e.target.value.length <= 18) setPhone(e.target.value); }}
                     required
                     style={{ ...inputStyle, border: "none", borderRadius: 0, backgroundColor: "transparent", flex: 1 }}
                   />
