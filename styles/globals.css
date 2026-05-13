@@ -485,7 +485,9 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px;
+  /* Extra bottom padding so the row clears the bottom-left of the viewport
+     (where Next's dev floater lives, and where mobile gestures grab). */
+  padding: 14px 18px 26px;
   border: none;
   background: transparent;
   border-top: 1px solid #F0EDE8;

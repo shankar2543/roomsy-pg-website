@@ -121,7 +121,7 @@ function AdminSidebar({ active }: { active: string }) {
           </Link>
         </div>
 
-        <div style={{ marginTop: "auto", borderTop: "1px solid #F0EDE8", padding: "20px 24px" }}>
+        <div style={{ marginTop: "auto", borderTop: "1px solid #F0EDE8", padding: "20px 24px 28px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "#FFF0F3", borderRadius: "100px", padding: "3px 10px", marginBottom: "10px" }}>
             <HiShieldCheck size={12} color="#FF385C" />
             <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "700", color: "#FF385C", letterSpacing: "0.5px", textTransform: "uppercase" }}>Platform Admin</span>
