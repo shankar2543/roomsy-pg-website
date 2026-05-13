@@ -713,7 +713,7 @@ Parse.Cloud.define("createBooking", async (request) => {
     type: "booking_requested",
     title: "New booking request",
     body: `${request.user.get("name") || "A tenant"} requested to book ${pg.get("name")} (${pg.get("area")}).`,
-    link: `/admin/pgs/${pg.id}`,
+    link: `/admin/bookings?tab=pending`,
   });
   return { objectId: b.id };
 });
@@ -758,7 +758,7 @@ Parse.Cloud.define("confirmBooking", async (request) => {
     type: "booking_confirmed",
     title: "Booking confirmed",
     body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s booking at ${b.get("pgName")} was confirmed.`,
-    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+    link: `/admin/bookings?tab=confirmed`,
   });
   return { ok: true };
 });
@@ -780,7 +780,7 @@ Parse.Cloud.define("rejectBooking", async (request) => {
     type: "booking_rejected",
     title: "Booking declined",
     body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s request for ${b.get("pgName")} was declined by the owner.`,
-    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+    link: `/admin/bookings?tab=rejected`,
   });
   return { ok: true };
 });
@@ -813,7 +813,7 @@ Parse.Cloud.define("cancelBooking", async (request) => {
     body: isCustomer
       ? `${request.user.get("name") || "A tenant"} cancelled their booking at ${b.get("pgName")}.`
       : `Owner cancelled a booking at ${b.get("pgName")}.`,
-    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+    link: `/admin/bookings?tab=cancelled`,
   });
   return { ok: true };
 });
@@ -841,7 +841,7 @@ Parse.Cloud.define("vacateBooking", async (request) => {
     type: "stay_completed",
     title: "Stay completed",
     body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s stay at ${b.get("pgName")} was marked complete.`,
-    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+    link: `/admin/bookings?tab=completed`,
   });
   return { ok: true };
 });
