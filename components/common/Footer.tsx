@@ -91,8 +91,6 @@ export default function Footer() {
             <FooterLink href="/">Home</FooterLink>
             <FooterLink href="/pgs">Find PG</FooterLink>
             <FooterLink href="/auth/signup?role=pg_admin">Become a Host</FooterLink>
-            <FooterLink href="#">About Us</FooterLink>
-            <FooterLink href="#">Contact</FooterLink>
           </div>
 
           {/* For Owners */}
@@ -100,9 +98,6 @@ export default function Footer() {
             <ColTitle>For Owners</ColTitle>
             <FooterLink href="/auth/signup?role=pg_admin">List Property</FooterLink>
             <FooterLink href="/auth/login">Owner Login</FooterLink>
-            <FooterLink href="/user/dashboard">Dashboard</FooterLink>
-            <FooterLink href="#">Terms &amp; Conditions</FooterLink>
-            <FooterLink href="#">Privacy Policy</FooterLink>
           </div>
 
           {/* Contact Us */}
