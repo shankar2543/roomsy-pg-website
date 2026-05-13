@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HiLocationMarker, HiPhone, HiMail, HiChevronRight } from "react-icons/hi";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaGooglePlay, FaApple } from "react-icons/fa";
 
 function ColTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -80,6 +80,23 @@ export default function Footer() {
                   {s.icon}
                 </a>
               ))}
+            </div>
+
+            <div className="footer-stores" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "16px" }}>
+              <a href="#" aria-label="Get it on Google Play" style={{ display: "inline-flex", alignItems: "center", gap: "8px", backgroundColor: "#1C1917", border: "1px solid #292524", borderRadius: "10px", padding: "8px 14px", color: "#fff", textDecoration: "none", transition: "all 0.15s", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF385C"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#292524"; }}
+              >
+                <FaGooglePlay size={16} />
+                Google Play
+              </a>
+              <a href="#" aria-label="Download on the App Store" style={{ display: "inline-flex", alignItems: "center", gap: "8px", backgroundColor: "#1C1917", border: "1px solid #292524", borderRadius: "10px", padding: "8px 14px", color: "#fff", textDecoration: "none", transition: "all 0.15s", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF385C"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#292524"; }}
+              >
+                <FaApple size={17} />
+                App Store
+              </a>
             </div>
           </div>
 
