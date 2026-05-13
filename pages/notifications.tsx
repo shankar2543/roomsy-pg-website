@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import { Sidebar as PGOwnerSidebar } from "@/pages/pg-admin/dashboard";
+import { AdminSidebar } from "@/pages/admin/dashboard";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   listMyNotifications,
@@ -24,6 +26,159 @@ function timeAgo(iso: string): string {
   const d = Math.floor(h / 24);
   if (d < 30) return `${d}d ago`;
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+interface NotifListProps {
+  loading: boolean;
+  items: ServiceNotification[];
+  unreadCount: number;
+  onClickItem: (n: ServiceNotification) => void;
+  onMarkAll: () => void;
+  /** Wrapper styling — owner/admin pages use a borderless white card inside
+   *  the sidebar layout; customer page wraps in a max-width container. */
+  variant: "customer" | "panel";
+}
+
+function NotifList({ loading, items, unreadCount, onClickItem, onMarkAll, variant }: NotifListProps) {
+  return (
+    <>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+        <div>
+          {variant === "customer" && (
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "#1C1917", margin: 0, letterSpacing: "-0.5px" }}>
+              Notifications
+            </h1>
+          )}
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#78716C", marginTop: variant === "customer" ? 4 : 0 }}>
+            {items.length === 0
+              ? "You're all caught up."
+              : `${unreadCount} unread of ${items.length} total`}
+          </p>
+        </div>
+        {unreadCount > 0 && (
+          <button
+            onClick={onMarkAll}
+            style={{
+              background: "#fff", border: "1px solid #E8E4DE", borderRadius: 100,
+              padding: "8px 14px", fontFamily: "var(--font-body)", fontSize: 13,
+              fontWeight: 600, color: "#FF385C", cursor: "pointer",
+            }}
+          >
+            Mark all read
+          </button>
+        )}
+      </header>
+
+      {loading ? (
+        <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#78716C", textAlign: "center", padding: 40 }}>
+          Loading…
+        </p>
+      ) : items.length === 0 ? (
+        <div style={{ background: "#fff", border: "1px solid #E8E4DE", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
+          <HiOutlineBell size={36} color="#D6D3CE" style={{ marginBottom: 12 }} />
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#78716C", margin: 0 }}>
+            No notifications yet.
+          </p>
+        </div>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, background: "#fff", borderRadius: 16, border: "1px solid #E8E4DE", overflow: "hidden" }}>
+          {items.map((n) => (
+            <li key={n.objectId} style={{ borderBottom: "1px solid #F5F3F0" }}>
+              <button
+                onClick={() => onClickItem(n)}
+                style={{
+                  display: "flex", flexDirection: "column", gap: 6,
+                  padding: "16px 20px", width: "100%",
+                  textAlign: "left", background: n.isRead ? "transparent" : "#FFF7F8",
+                  border: "none", cursor: "pointer", transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#F9F7F4")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = n.isRead ? "transparent" : "#FFF7F8")}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {!n.isRead && (
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF385C", flexShrink: 0 }} />
+                  )}
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 600, color: "#1C1917" }}>
+                    {n.title}
+                  </span>
+                </div>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#57534E", lineHeight: 1.5 }}>
+                  {n.body}
+                </span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#A8A29E" }}>
+                  {timeAgo(n.createdAt)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+function CustomerShell({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      <main style={{ minHeight: "100vh", background: "#F9F7F4", paddingTop: 72 }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 24px" }}>
+          <Link
+            href="/"
+            aria-label="Back home"
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: "50%",
+              background: "#fff", border: "1px solid #E8E4DE",
+              color: "#1C1917", textDecoration: "none", marginBottom: 16,
+            }}
+          >
+            <HiArrowLeft size={16} />
+          </Link>
+          {children}
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+function PanelShell({
+  sidebar,
+  backHref,
+  countLabel,
+  children,
+}: {
+  sidebar: ReactNode;
+  backHref: string;
+  countLabel: string;
+  children: ReactNode;
+}) {
+  const router = useRouter();
+  return (
+    <div className="pg-layout">
+      {sidebar}
+      <main style={{ flex: 1, overflowX: "hidden" }}>
+        <div className="dash-hero-bar">
+          <div className="dash-hero-text">
+            <button onClick={() => router.push(backHref)} aria-label="Back to dashboard" className="dash-hero-back">
+              <HiArrowLeft size={16} />
+            </button>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(20px,3vw,26px)", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", marginBottom: 4 }}>
+              Notifications
+            </h1>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "rgba(255,255,255,0.68)", margin: 0 }}>
+              {countLabel}
+            </p>
+          </div>
+        </div>
+        <div className="pg-content" style={{ maxWidth: 900, margin: "0 auto" }}>
+          {children}
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default function NotificationsPage() {
@@ -63,101 +218,44 @@ export default function NotificationsPage() {
   if (!user) return null;
 
   const unreadCount = items.filter((n) => !n.isRead).length;
+  const countLabel = items.length === 0
+    ? "You're all caught up."
+    : `${unreadCount} unread of ${items.length} total`;
+
+  const list = (
+    <NotifList
+      loading={loading}
+      items={items}
+      unreadCount={unreadCount}
+      onClickItem={handleClick}
+      onMarkAll={handleMarkAll}
+      variant={user.role === "customer" ? "customer" : "panel"}
+    />
+  );
 
   return (
     <>
       <Head><title>Notifications — Roomsy</title></Head>
-      <Navbar />
 
-      <main style={{ minHeight: "100vh", background: "#F9F7F4", paddingTop: 72 }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 24px" }}>
-          <Link
-            href="/"
-            aria-label="Back home"
-            style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 36, height: 36, borderRadius: "50%",
-              background: "#fff", border: "1px solid #E8E4DE",
-              color: "#1C1917", textDecoration: "none", marginBottom: 16,
-            }}
-          >
-            <HiArrowLeft size={16} />
-          </Link>
-
-          <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-            <div>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "#1C1917", margin: 0, letterSpacing: "-0.5px" }}>
-                Notifications
-              </h1>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#78716C", marginTop: 4 }}>
-                {items.length === 0
-                  ? "You're all caught up."
-                  : `${unreadCount} unread of ${items.length} total`}
-              </p>
-            </div>
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAll}
-                style={{
-                  background: "#fff", border: "1px solid #E8E4DE", borderRadius: 100,
-                  padding: "8px 14px", fontFamily: "var(--font-body)", fontSize: 13,
-                  fontWeight: 600, color: "#FF385C", cursor: "pointer",
-                }}
-              >
-                Mark all read
-              </button>
-            )}
-          </header>
-
-          {loading ? (
-            <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#78716C", textAlign: "center", padding: 40 }}>
-              Loading…
-            </p>
-          ) : items.length === 0 ? (
-            <div style={{ background: "#fff", border: "1px solid #E8E4DE", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
-              <HiOutlineBell size={36} color="#D6D3CE" style={{ marginBottom: 12 }} />
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#78716C", margin: 0 }}>
-                No notifications yet.
-              </p>
-            </div>
-          ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, background: "#fff", borderRadius: 16, border: "1px solid #E8E4DE", overflow: "hidden" }}>
-              {items.map((n) => (
-                <li key={n.objectId} style={{ borderBottom: "1px solid #F5F3F0" }}>
-                  <button
-                    onClick={() => handleClick(n)}
-                    style={{
-                      display: "flex", flexDirection: "column", gap: 6,
-                      padding: "16px 20px", width: "100%",
-                      textAlign: "left", background: n.isRead ? "transparent" : "#FFF7F8",
-                      border: "none", cursor: "pointer", transition: "background 0.15s",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#F9F7F4")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = n.isRead ? "transparent" : "#FFF7F8")}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {!n.isRead && (
-                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF385C", flexShrink: 0 }} />
-                      )}
-                      <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 600, color: "#1C1917" }}>
-                        {n.title}
-                      </span>
-                    </div>
-                    <span style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#57534E", lineHeight: 1.5 }}>
-                      {n.body}
-                    </span>
-                    <span style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#A8A29E" }}>
-                      {timeAgo(n.createdAt)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </main>
-
-      <Footer />
+      {user.role === "pg_admin" ? (
+        <PanelShell
+          sidebar={<PGOwnerSidebar active="/notifications" />}
+          backHref="/pg-admin/dashboard"
+          countLabel={countLabel}
+        >
+          {list}
+        </PanelShell>
+      ) : user.role === "platform_admin" ? (
+        <PanelShell
+          sidebar={<AdminSidebar active="/notifications" />}
+          backHref="/admin/dashboard"
+          countLabel={countLabel}
+        >
+          {list}
+        </PanelShell>
+      ) : (
+        <CustomerShell>{list}</CustomerShell>
+      )}
     </>
   );
 }

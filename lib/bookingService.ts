@@ -95,11 +95,23 @@ export async function getBookingsForPG(pgId: string): Promise<ServiceBooking[]> 
 }
 
 export async function getAllBookings(): Promise<ServiceBooking[]> {
-  const q = new Parse.Query(BOOKING_CLASS);
-  q.descending("createdAt");
-  q.limit(1000);
-  const rows = await q.find();
-  return rows.map(toServiceBooking);
+  // Booking ACLs only allow the customer and the owner to read directly, so a
+  // platform admin can't query the class — fan out through a master-key Cloud
+  // Function instead.
+  const rows = (await Parse.Cloud.run("listAllBookings")) as Array<
+    Omit<ServiceBooking, "createdAt" | "vacatedAt"> & {
+      createdAt: Date | string;
+      vacatedAt?: Date | string;
+    }
+  >;
+  return rows.map((r) => ({
+    ...r,
+    createdAt:
+      typeof r.createdAt === "string" ? r.createdAt : new Date(r.createdAt).toISOString(),
+    vacatedAt: r.vacatedAt
+      ? typeof r.vacatedAt === "string" ? r.vacatedAt : new Date(r.vacatedAt).toISOString()
+      : undefined,
+  }));
 }
 
 export type BookingCreateInput = {

@@ -147,9 +147,8 @@ export default function Navbar() {
                 fontFamily: "var(--font-display)",
                 fontSize: "22px",
                 fontWeight: "600",
-                color: transparent ? "#FF385C" : "#1C1917",
+                color: "#FF385C",
                 letterSpacing: "-0.3px",
-                transition: "color 0.3s ease",
               }}
             >
               Roomsy
@@ -246,7 +245,10 @@ export default function Navbar() {
           )}
 
           {/* Notification bell — only when logged in */}
-          <NotificationBell />
+          <NotificationBell
+            iconColor={transparent ? "#fff" : "#1C1917"}
+            hoverBg={transparent ? "rgba(255,255,255,0.15)" : "#F5F3F0"}
+          />
 
           {/* Desktop: profile icon — picture, initials, or fallback */}
           <button

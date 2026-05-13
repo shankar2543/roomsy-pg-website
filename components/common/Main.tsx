@@ -323,9 +323,12 @@ export default function Main() {
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: 0,
+          top: -1,
+          left: 0,
+          right: 0,
+          bottom: -1,
           width: "100%",
-          height: "100%",
+          height: "calc(100% + 2px)",
           objectFit: "cover",
           objectPosition: "center right",
           zIndex: 0,
@@ -426,15 +429,15 @@ export default function Main() {
         {/* LEFT */}
         <motion.div variants={container} initial="hidden" animate="show">
           <motion.div variants={fadeUp} style={{
-            display: "inline-flex", alignItems: "center", gap: "6px",
+            display: "inline-flex", alignItems: "center", gap: "5px",
             backgroundColor: "#fff", border: "1px solid #E8E4DE", borderRadius: "100px",
-            padding: "5px 14px 5px 8px", marginBottom: "32px",
+            padding: "3px 11px 3px 5px", marginBottom: "32px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
           }}>
-            <div style={{ width: "22px", height: "22px", borderRadius: "50%", backgroundColor: "#FFF0F3", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MdOutlineVerified size={13} color="#FF385C" />
+            <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#FFF0F3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <MdOutlineVerified size={11} color="#FF385C" />
             </div>
-            <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "500", color: "#78716C", letterSpacing: "0.2px" }}>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: "500", color: "#78716C", letterSpacing: "0.2px" }}>
               Verified PGs · No Brokerage · Across India
             </span>
           </motion.div>
@@ -474,20 +477,20 @@ export default function Main() {
             Discover verified PG accommodations with flexible daily, weekly, and monthly stays — without brokerage.
           </motion.p>
 
-          <motion.div variants={container} style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "28px", flexWrap: "wrap" }}>
+          <motion.div variants={container} style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "28px", flexWrap: "wrap" }}>
             {[
-              { icon: <HiShieldCheck size={14} color="#fff" />, text: "ID Verified Tenants" },
-              { icon: <HiCurrencyRupee size={14} color="#fff" />, text: "Zero Brokerage" },
+              { icon: <HiShieldCheck size={11} color="#fff" />, text: "ID Verified Tenants" },
+              { icon: <HiCurrencyRupee size={11} color="#fff" />, text: "Zero Brokerage" },
             ].map((b, i) => (
               <motion.div key={i} variants={popIn} whileHover={{ scale: 1.05 }} style={{
-                display: "flex", alignItems: "center", gap: "8px", backgroundColor: "#fff",
-                border: "1px solid #E8E4DE", borderRadius: "100px", padding: "6px 14px 6px 6px",
+                display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#fff",
+                border: "1px solid #E8E4DE", borderRadius: "100px", padding: "4px 11px 4px 4px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}>
-                <div style={{ width: "24px", height: "24px", borderRadius: "7px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(249,115,22,0.35)", flexShrink: 0 }}>
+                <div style={{ width: "19px", height: "19px", borderRadius: "6px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(249,115,22,0.35)", flexShrink: 0 }}>
                   {b.icon}
                 </div>
-                <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "500", color: "#1C1917" }}>{b.text}</span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: "500", color: "#1C1917" }}>{b.text}</span>
               </motion.div>
             ))}
           </motion.div>

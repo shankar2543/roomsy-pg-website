@@ -8,7 +8,7 @@ import { PG } from "@/types/pg";
 import {
   HiHome, HiOfficeBuilding, HiUsers,
   HiChevronRight, HiShieldCheck, HiCurrencyRupee, HiOutlineBell,
-  HiOutlineUser,
+  HiOutlineUser, HiCalendar,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import NotificationBell from "@/components/common/NotificationBell";
@@ -16,6 +16,7 @@ import NotificationBell from "@/components/common/NotificationBell";
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <HiHome size={20} />,           iconSm: <HiHome size={22} /> },
   { href: "/admin/pgs",       label: "PGs",       icon: <HiOfficeBuilding size={20} />, iconSm: <HiOfficeBuilding size={22} /> },
+  { href: "/admin/bookings",  label: "Bookings",  icon: <HiCalendar size={20} />,        iconSm: <HiCalendar size={22} /> },
   { href: "/admin/users",     label: "Users",     icon: <HiUsers size={20} />,           iconSm: <HiUsers size={22} /> },
   { href: "/admin/revenue",   label: "Revenue",   icon: <HiCurrencyRupee size={20} />,   iconSm: <HiCurrencyRupee size={22} /> },
   { href: "/profile",         label: "My Profile", icon: <HiOutlineUser size={20} />,    iconSm: <HiOutlineUser size={22} /> },

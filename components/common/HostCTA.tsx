@@ -36,8 +36,9 @@ export default function HostCTA() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, ease, delay: 0.2 }}
               className="hostcta-eyebrow"
-              style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255, 56, 92, 0.12)", border: "1px solid rgba(255, 56, 92, 0.28)", borderRadius: "100px", padding: "3px 9px 3px 7px", fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "16px" }}
             >
+              <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: "#FF385C", flexShrink: 0 }} />
               For PG Owners
             </motion.p>
             <motion.h2

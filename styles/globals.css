@@ -72,7 +72,10 @@ strong, b {
 html, body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;        /* prevent stray horizontal scroll that leaves a gap on the right of full-bleed sections */
+  /* `clip` instead of `hidden` — same horizontal clip, but does not create a
+     scroll container, so `position: sticky` keeps working on descendants
+     (e.g. the PG filter sidebar). */
+  overflow-x: clip;
 }
 
 /* Reduce motion for users who prefer it */
@@ -142,10 +145,13 @@ h4 {
   color: #FF385C;
 }
 
-/* Scrollbar */
+/* Scrollbar — transparent track so dark/full-bleed sections aren't broken by
+   a light strip running down the right edge of the viewport. */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #F9F7F4; }
-::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(120, 113, 108, 0.35); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(120, 113, 108, 0.55); }
+html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
 
 /* PG Admin shared layout */
 .pg-layout {

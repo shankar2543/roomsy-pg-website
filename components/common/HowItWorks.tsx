@@ -21,7 +21,8 @@ export default function HowItWorks() {
           style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "56px", flexWrap: "wrap", gap: "20px" }}
         >
           <div>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+            <p style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255, 56, 92, 0.12)", border: "1px solid rgba(255, 56, 92, 0.28)", borderRadius: "100px", padding: "3px 9px 3px 7px", fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "12px" }}>
+              <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: "#FF385C", flexShrink: 0 }} />
               How it works
             </p>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: "600", color: "#F9F7F4", letterSpacing: "-1px", lineHeight: "1.15" }}>

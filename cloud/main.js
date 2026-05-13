@@ -287,6 +287,48 @@ Parse.Cloud.define("unsuspendPG", async (request) => {
   return { ok: true };
 });
 
+// Platform admin: read every booking across the platform.
+// Bookings carry an ACL that only lets the customer and the owner read them,
+// so admins must go through this master-key endpoint.
+Parse.Cloud.define("listAllBookings", async (request) => {
+  await requirePlatformAdmin(request);
+  const q = new Parse.Query("Booking");
+  q.include("user");
+  q.include("pg");
+  q.include("pgOwner");
+  q.descending("createdAt");
+  q.limit(1000);
+  const rows = await q.find({ useMasterKey: true });
+  return rows.map((b) => {
+    const user = b.get("user");
+    const pg = b.get("pg");
+    const owner = b.get("pgOwner");
+    const vacatedAt = b.get("vacatedAt");
+    return {
+      objectId: b.id,
+      userId: user ? user.id : "",
+      pgId: pg ? pg.id : "",
+      pgOwnerId: owner ? owner.id : undefined,
+      pgName: b.get("pgName") || "",
+      pgArea: b.get("pgArea") || "",
+      pgPhoto: b.get("pgPhoto") || "",
+      sharing: b.get("sharing") || "double",
+      stayType: b.get("stayType") || "monthly",
+      fromDate: b.get("fromDate") || "",
+      toDate: b.get("toDate") || undefined,
+      months: b.get("months") || undefined,
+      nights: b.get("nights") || undefined,
+      total: b.get("total") || 0,
+      status: b.get("status") || "pending",
+      tenantName: b.get("tenantName") || (user ? user.get("name") : "") || undefined,
+      tenantPhone: b.get("tenantPhone") || (user ? user.get("phone") : "") || undefined,
+      idProofUrl: b.get("idProofUrl") || undefined,
+      createdAt: b.get("createdAt"),
+      vacatedAt: vacatedAt || undefined,
+    };
+  });
+});
+
 // Platform admin: read every user (sanitized — no password, no session token).
 Parse.Cloud.define("listAllUsers", async (request) => {
   await requirePlatformAdmin(request);
@@ -667,6 +709,12 @@ Parse.Cloud.define("createBooking", async (request) => {
     body: `${request.user.get("name") || "A tenant"} wants to book ${pg.get("name")}.`,
     link: `/pg-admin/bookings`,
   });
+  await notifyAllPlatformAdmins({
+    type: "booking_requested",
+    title: "New booking request",
+    body: `${request.user.get("name") || "A tenant"} requested to book ${pg.get("name")} (${pg.get("area")}).`,
+    link: `/admin/pgs/${pg.id}`,
+  });
   return { objectId: b.id };
 });
 
@@ -706,6 +754,12 @@ Parse.Cloud.define("confirmBooking", async (request) => {
     body: `Your stay at ${b.get("pgName")} is confirmed.`,
     link: `/bookings`,
   });
+  await notifyAllPlatformAdmins({
+    type: "booking_confirmed",
+    title: "Booking confirmed",
+    body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s booking at ${b.get("pgName")} was confirmed.`,
+    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+  });
   return { ok: true };
 });
 
@@ -721,6 +775,12 @@ Parse.Cloud.define("rejectBooking", async (request) => {
     title: "Booking declined",
     body: `Your request for ${b.get("pgName")} was declined.`,
     link: `/bookings`,
+  });
+  await notifyAllPlatformAdmins({
+    type: "booking_rejected",
+    title: "Booking declined",
+    body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s request for ${b.get("pgName")} was declined by the owner.`,
+    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
   });
   return { ok: true };
 });
@@ -747,6 +807,14 @@ Parse.Cloud.define("cancelBooking", async (request) => {
       : `Your booking at ${b.get("pgName")} was cancelled by the owner.`,
     link: isCustomer ? `/pg-admin/bookings` : `/bookings`,
   });
+  await notifyAllPlatformAdmins({
+    type: "booking_cancelled",
+    title: "Booking cancelled",
+    body: isCustomer
+      ? `${request.user.get("name") || "A tenant"} cancelled their booking at ${b.get("pgName")}.`
+      : `Owner cancelled a booking at ${b.get("pgName")}.`,
+    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
+  });
   return { ok: true };
 });
 
@@ -768,6 +836,12 @@ Parse.Cloud.define("vacateBooking", async (request) => {
     title: "Stay marked complete",
     body: `Your stay at ${b.get("pgName")} is wrapped up — share a quick rating?`,
     link: `/bookings`,
+  });
+  await notifyAllPlatformAdmins({
+    type: "stay_completed",
+    title: "Stay completed",
+    body: `${(b.get("user") && b.get("user").get("name")) || "A tenant"}'s stay at ${b.get("pgName")} was marked complete.`,
+    link: b.get("pg") ? `/admin/pgs/${b.get("pg").id}` : null,
   });
   return { ok: true };
 });

@@ -65,8 +65,8 @@ export default function Footer() {
               <div className="footer-brand-logo" style={{ width: "38px", height: "38px", borderRadius: "10px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "700", color: "#fff", lineHeight: 1 }}>R</span>
               </div>
-              <span className="footer-brand-name" style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "600", color: "#fff", letterSpacing: "-0.3px" }}>
-                Roomsy<span style={{ color: "#FF385C" }}>.</span>
+              <span className="footer-brand-name" style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "600", color: "#FF385C", letterSpacing: "-0.3px" }}>
+                Roomsy.
               </span>
             </Link>
             <p className="footer-brand-desc" style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C", lineHeight: "1.75", maxWidth: "220px", marginBottom: "24px" }}>
