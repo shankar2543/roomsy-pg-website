@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   HiShieldCheck, HiCurrencyRupee, HiLocationMarker, HiSearch,
   HiChevronLeft, HiChevronRight, HiCalendar,
@@ -17,7 +17,7 @@ const fadeUp = {
   hidden: { opacity: 0, y: 36 },
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
 };
-const popIn = {
+const popIn: Variants = {
   hidden: { opacity: 0, scale: 0.82 },
   show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 320, damping: 28 } },
 };

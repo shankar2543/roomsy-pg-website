@@ -8,7 +8,7 @@ const CATEGORIES = [
   { label: "PGs For Co-Living", pgType: "coliving", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=85" },
 ];
 
-const ease = [0.22, 1, 0.36, 1];
+const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function SearchByCategory() {
   const router = useRouter();

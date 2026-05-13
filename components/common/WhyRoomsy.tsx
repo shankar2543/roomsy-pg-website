@@ -11,7 +11,7 @@ const FEATURES: Feature[] = [
   { icon: <HiCalendar size={22} color="#fff" />, title: "Flexible Stays", desc: "Book daily, weekly or monthly. Move in fast and move out with a simple notice period." },
 ];
 
-const ease = [0.22, 1, 0.36, 1];
+const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function WhyRoomsy() {
   return (

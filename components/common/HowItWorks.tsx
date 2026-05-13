@@ -6,7 +6,7 @@ const STEPS = [
   { step: "03", title: "Book & move in", desc: "Submit your ID proof, confirm with the owner, pay directly — and move in on your chosen date." },
 ];
 
-const ease = [0.22, 1, 0.36, 1];
+const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function HowItWorks() {
   return (
