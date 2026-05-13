@@ -57,6 +57,10 @@ Server-side operations (confirm booking, cancel booking, approve PG, compute rat
 - PGs only appear in listings when `isApproved === true` and `isSuspended === false`.
 - Payments are fully offline (UPI / QR / phone call) — there is no payment gateway integration.
 
+## Troubleshooting
+
+**Dynamic routes return 404 in dev (e.g. `/pgs/{id}`, `/admin/pgs/{pgId}`, `/pg-admin/my-pgs/{pgId}`)** — Next.js Turbopack occasionally drops a dynamic page from its in-memory map after enough hot reloads, while the static sibling at the same folder (e.g. `/pgs`) keeps working. Confirm via `curl -sI http://localhost:3000/pgs/anything` returning 404. Fix: stop `npm run dev` and start it again. The 404 disappears on a fresh dev process. Not a source bug; nothing to commit.
+
 ## Environment Variables
 
 Fill in `.env.local` before running:
