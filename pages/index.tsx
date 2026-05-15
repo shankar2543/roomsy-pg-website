@@ -14,16 +14,16 @@ export default function Home() {
       <Head>
         <title>Roomsy — Find Verified PGs Across India</title>
       </Head>
-      <div style={{ backgroundColor: "#F9F7F4" }}>
-      <Navbar />
-      <Main />
-      <SearchByCategory />
-      <WhyRoomsy />
-      <HowItWorks />
-      <PopularCities />
-      <HostCTA />
-      <Footer />
-    </div>
+      <div style={{ backgroundColor: "#FFFFFF", position: "relative" }}>
+        <Navbar />
+        <Main />
+        <SearchByCategory />
+        <WhyRoomsy />
+        <HowItWorks />
+        <PopularCities />
+        <HostCTA />
+        <Footer />
+      </div>
     </>
   );
 }

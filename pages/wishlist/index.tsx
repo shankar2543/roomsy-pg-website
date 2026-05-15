@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import CustomerSidebar from "@/components/common/CustomerSidebar";
 import PGCard from "@/components/common/PGCard";
 import { useAuthStore } from "@/store/useAuthStore";
 import { listAllPGs } from "@/lib/pgService";
@@ -55,22 +55,27 @@ export default function WishlistPage() {
   return (
     <>
       <Head><title>My Wishlist — Roomsy</title></Head>
-      <Navbar />
-
-      <main className="wl-main">
+      <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
+        <CustomerSidebar active="/wishlist" />
+        <main className="wl-main">
+          <div className="dash-hero-bar">
+            <div className="dash-hero-text">
+              <Link href="/pgs" className="dash-hero-back" aria-label="Back to browse PGs">
+                <HiArrowLeft size={18} />
+              </Link>
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(18px,3vw,24px)", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", marginBottom: "4px" }}>
+                My Wishlist
+              </h1>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "rgba(255,255,255,0.72)", margin: 0 }}>
+                {!ready
+                  ? "Loading…"
+                  : pgs.length === 0
+                    ? "Save properties you love and they'll appear here."
+                    : `${pgs.length} saved propert${pgs.length === 1 ? "y" : "ies"}`}
+              </p>
+            </div>
+          </div>
         <div className="wl-shell">
-          <Link href="/pgs" className="wl-back" aria-label="Back to browse PGs">
-            <HiArrowLeft size={18} />
-          </Link>
-          <h1 className="wl-title">My Wishlist</h1>
-          <p className="wl-sub">
-            {!ready
-              ? "Loading…"
-              : pgs.length === 0
-                ? "Save properties you love and they'll appear here."
-                : `${pgs.length} saved propert${pgs.length === 1 ? "y" : "ies"}`}
-          </p>
-
           {ready && pgs.length === 0 ? (
             <div className="wl-empty">
               <div className="wl-empty-icon">
@@ -89,44 +94,18 @@ export default function WishlistPage() {
           )}
         </div>
       </main>
-
-      <Footer />
+        <Footer />
+      </div>
 
       <style jsx>{`
         .wl-main {
           min-height: 100vh;
           background: #F9F7F4;
-          padding-top: 72px;
         }
         .wl-shell {
           max-width: 1180px;
           margin: 0 auto;
-          padding: 36px 24px 80px;
-        }
-        .wl-back {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-family: var(--font-body);
-          font-size: 13px;
-          color: #78716C;
-          text-decoration: none;
-          margin-bottom: 14px;
-        }
-        .wl-back:hover { color: #1C1917; }
-        .wl-title {
-          font-family: var(--font-display);
-          font-size: clamp(24px, 4vw, 32px);
-          font-weight: 600;
-          color: #1C1917;
-          letter-spacing: -0.5px;
-          margin: 0 0 6px;
-        }
-        .wl-sub {
-          font-family: var(--font-body);
-          font-size: 14px;
-          color: #78716C;
-          margin: 0 0 28px;
+          padding: 28px 24px 80px;
         }
         .wl-grid {
           display: grid;
@@ -180,7 +159,6 @@ export default function WishlistPage() {
         .wl-cta:hover { background: #E31C5F; }
 
         @media (max-width: 640px) {
-          .wl-main { padding-top: 60px; }
           .wl-shell { padding: 20px 14px 60px; }
           .wl-grid {
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

@@ -4,9 +4,9 @@ import { FaFacebookF, FaInstagram, FaGooglePlay, FaApple } from "react-icons/fa"
 
 function ColTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="footer-coltitle" style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-      <div className="footer-coltitle-bar" style={{ width: "4px", height: "24px", backgroundColor: "#FF385C", borderRadius: "2px", flexShrink: 0 }} />
-      <h4 style={{ fontFamily: "var(--font-body)", fontSize: "16px", fontWeight: "700", color: "#fff", margin: 0, letterSpacing: "-0.2px" }}>
+    <div className="footer-coltitle" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+      <span className="footer-coltitle-bar" style={{ width: "3px", height: "18px", backgroundColor: "var(--terracotta)", borderRadius: "2px", flexShrink: 0 }} />
+      <h4 style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.1px" }}>
         {children}
       </h4>
     </div>
@@ -15,11 +15,26 @@ function ColTitle({ children }: { children: React.ReactNode }) {
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="footer-link" style={{ display: "flex", alignItems: "center", gap: "8px", fontFamily: "var(--font-body)", fontSize: "14px", color: "#A8A29E", textDecoration: "none", transition: "color 0.15s", marginBottom: "14px" }}
-      onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "#A8A29E")}
+    <Link
+      href={href}
+      className="footer-link"
+      style={{
+        display: "flex", alignItems: "center", gap: "8px",
+        fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 500,
+        color: "rgba(244,238,227,0.65)", textDecoration: "none",
+        transition: "color 0.2s, transform 0.2s", marginBottom: "12px",
+        lineHeight: 1.5,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = "#fff";
+        e.currentTarget.style.transform = "translateX(4px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = "rgba(244,238,227,0.65)";
+        e.currentTarget.style.transform = "translateX(0)";
+      }}
     >
-      <HiChevronRight size={13} color="#FF385C" style={{ flexShrink: 0 }} />
+      <HiChevronRight size={13} color="var(--terracotta)" style={{ flexShrink: 0 }} />
       {children}
     </Link>
   );
@@ -28,10 +43,10 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 function ContactRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="footer-contact-row" style={{ display: "flex", gap: "12px", alignItems: "flex-start", marginBottom: "14px" }}>
-      <div className="footer-contact-icon" style={{ width: "36px", height: "36px", borderRadius: "8px", backgroundColor: "#1C1917", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #292524" }}>
-        <span style={{ color: "#FF385C" }}>{icon}</span>
+      <div className="footer-contact-icon" style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "rgba(255,56,92,0.10)", border: "1px solid rgba(255,56,92,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ color: "var(--terracotta)", display: "inline-flex" }}>{icon}</span>
       </div>
-      <span className="footer-contact-text" style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#A8A29E", lineHeight: "1.6", paddingTop: "8px" }}>
+      <span className="footer-contact-text" style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "rgba(244,238,227,0.7)", lineHeight: "1.55", paddingTop: "6px" }}>
         {children}
       </span>
     </div>
@@ -45,58 +60,51 @@ const SOCIAL = [
 
 export default function Footer() {
   return (
-    <footer style={{ backgroundColor: "#0D0D0D", position: "relative" }}>
-      {/* Wave top */}
-      <div style={{ lineHeight: 0, overflow: "hidden" }}>
-        <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
-          <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,0 L0,0 Z" fill="#F9F7F4" />
-        </svg>
-      </div>
-
-      <div className="footer-inner" style={{ maxWidth: "1200px", margin: "0 auto", padding: "56px 24px 32px" }}>
+    <footer style={{ backgroundColor: "var(--ink)", position: "relative" }}>
+      <div className="footer-inner" style={{ maxWidth: "1280px", margin: "0 auto", padding: "36px 24px 22px" }}>
         {/* 4-column grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1.2fr", gap: "48px" }} className="footer-grid">
+        <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1.2fr", gap: "40px" }} className="footer-grid">
 
           {/* Brand */}
           <div className="footer-brand">
-            <Link href="/" className="footer-brand-link" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-              <div className="footer-brand-logo" style={{ width: "38px", height: "38px", borderRadius: "10px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "700", color: "#fff", lineHeight: 1 }}>R</span>
-              </div>
-              <span className="footer-brand-name" style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "600", color: "#FF385C", letterSpacing: "-0.3px" }}>
-                Roomsy.
+            <Link href="/" className="footer-brand-link" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+              <span className="footer-brand-logo" style={{ width: "34px", height: "34px", borderRadius: "9px", backgroundColor: "var(--terracotta)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 16px rgba(255,56,92,0.35)", flexShrink: 0 }}>
+                <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 700, color: "#fff", lineHeight: 1 }}>R</span>
+              </span>
+              <span className="footer-brand-name" style={{ fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 600, color: "var(--terracotta)", letterSpacing: "-0.03em", lineHeight: 1, display: "inline-block" }}>
+                Roomsy<span style={{ color: "var(--terracotta)", fontStyle: "italic" }}>.</span>
               </span>
             </Link>
-            <p className="footer-brand-desc" style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C", lineHeight: "1.75", maxWidth: "220px", marginBottom: "24px" }}>
+            <p className="footer-brand-desc" style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "rgba(244,238,227,0.5)", lineHeight: "1.6", maxWidth: "260px", marginBottom: "16px" }}>
               India&apos;s most trusted platform for finding verified PGs &amp; Hostels. We ensure a safe and comfortable stay for everyone.
             </p>
-            <div className="footer-socials" style={{ display: "flex", gap: "10px" }}>
-              {SOCIAL.map((s, i) => (
-                <a key={i} href={s.href}
-                  style={{ width: "34px", height: "34px", borderRadius: "8px", backgroundColor: "#1C1917", border: "1px solid #292524", display: "flex", alignItems: "center", justifyContent: "center", color: "#A8A29E", textDecoration: "none", transition: "all 0.15s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#FF385C"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#FF385C"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#1C1917"; e.currentTarget.style.color = "#A8A29E"; e.currentTarget.style.borderColor = "#292524"; }}
-                >
-                  {s.icon}
-                </a>
-              ))}
-            </div>
+            <div className="footer-actions" style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
+              <a href="#" aria-label="Get it on Google Play" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", borderRadius: "4px", padding: "10px 16px", color: "rgba(244,238,227,0.85)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 600, letterSpacing: "1.6px", textTransform: "uppercase", minWidth: "120px", height: "36px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--terracotta)"; e.currentTarget.style.color = "var(--paper)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; e.currentTarget.style.color = "rgba(244,238,227,0.85)"; }}
+              >
+                <FaGooglePlay size={14} />
+                Android
+              </a>
+              <a href="#" aria-label="Download on the App Store" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", borderRadius: "4px", padding: "10px 16px", color: "rgba(244,238,227,0.85)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 600, letterSpacing: "1.6px", textTransform: "uppercase", minWidth: "120px", height: "36px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--terracotta)"; e.currentTarget.style.color = "var(--paper)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; e.currentTarget.style.color = "rgba(244,238,227,0.85)"; }}
+              >
+                <FaApple size={15} />
+                iOS
+              </a>
 
-            <div className="footer-stores" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "16px" }}>
-              <a href="#" aria-label="Get it on Google Play" style={{ display: "inline-flex", alignItems: "center", gap: "8px", backgroundColor: "#1C1917", border: "1px solid #292524", borderRadius: "10px", padding: "8px 14px", color: "#fff", textDecoration: "none", transition: "all 0.15s", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF385C"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#292524"; }}
-              >
-                <FaGooglePlay size={16} />
-                Google Play
-              </a>
-              <a href="#" aria-label="Download on the App Store" style={{ display: "inline-flex", alignItems: "center", gap: "8px", backgroundColor: "#1C1917", border: "1px solid #292524", borderRadius: "10px", padding: "8px 14px", color: "#fff", textDecoration: "none", transition: "all 0.15s", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#FF385C"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#292524"; }}
-              >
-                <FaApple size={17} />
-                App Store
-              </a>
+              <div className="footer-socials" style={{ display: "flex", gap: "10px", marginLeft: "6px" }}>
+                {SOCIAL.map((s, i) => (
+                  <a key={i} href={s.href}
+                    style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(244,238,227,0.6)", textDecoration: "none", transition: "all 0.2s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--terracotta)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "var(--terracotta)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "rgba(244,238,227,0.6)"; e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; }}
+                  >
+                    {s.icon}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -118,28 +126,42 @@ export default function Footer() {
           {/* Contact Us */}
           <div className="footer-contact-col">
             <ColTitle>Contact Us</ColTitle>
-            <ContactRow icon={<HiLocationMarker size={16} />}>
-              Hitech City, Hyderabad,<br />Telangana, India
-            </ContactRow>
             <ContactRow icon={<HiPhone size={16} />}>
               +91 90000 00001
             </ContactRow>
             <ContactRow icon={<HiMail size={16} />}>
               support@roomsy.in
             </ContactRow>
+            <ContactRow icon={<HiLocationMarker size={16} />}>
+              Hitech City, Hyderabad,<br />Telangana, India
+            </ContactRow>
           </div>
         </div>
 
         {/* Divider + bottom bar */}
-        <div className="footer-bottom" style={{ borderTop: "1px solid #1C1917", marginTop: "48px", paddingTop: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-          <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#44403C" }}>
+        <div className="footer-bottom" style={{ borderTop: "1px solid rgba(244,238,227,0.10)", marginTop: "32px", paddingTop: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "rgba(244,238,227,0.4)", letterSpacing: "0.2px" }}>
             © 2026 Roomsy. All rights reserved.
           </span>
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#FF385C" }} />
-            <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#44403C" }}>
-              Made with care in India
-            </span>
+          <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+            <Link
+              href="/privacy"
+              style={{
+                fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 500,
+                color: "rgba(244,238,227,0.55)", textDecoration: "none",
+                letterSpacing: "0.3px", transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--terracotta)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(244,238,227,0.55)")}
+            >
+              Privacy Policy
+            </Link>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: "var(--terracotta)" }} />
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "rgba(244,238,227,0.55)", letterSpacing: "0.2px" }}>
+                Made with care in India
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -187,20 +209,20 @@ export default function Footer() {
 
           /* Section titles smaller and tighter */
           .footer-coltitle {
-            margin-bottom: 12px !important;
-            gap: 8px !important;
+            margin-bottom: 14px !important;
+            gap: 10px !important;
           }
           .footer-coltitle-bar {
             width: 3px !important;
             height: 16px !important;
           }
-          .footer-coltitle h4 { font-size: 13px !important; }
+          .footer-coltitle h4 { font-size: 14px !important; }
 
           /* Compact link rows */
           .footer-link {
-            font-size: 12px !important;
-            margin-bottom: 8px !important;
-            gap: 6px !important;
+            font-size: 13px !important;
+            margin-bottom: 10px !important;
+            gap: 8px !important;
           }
 
           /* Contact column spans full width with inline rows */
@@ -211,15 +233,15 @@ export default function Footer() {
             align-items: center !important;
           }
           .footer-contact-icon {
-            width: 28px !important;
-            height: 28px !important;
-            border-radius: 6px !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
           }
-          .footer-contact-icon span { transform: scale(0.85); display: inline-flex; }
+          .footer-contact-icon span { transform: scale(0.9); display: inline-flex; }
           .footer-contact-text {
-            font-size: 12px !important;
-            padding-top: 0 !important;
-            line-height: 1.4 !important;
+            font-size: 13px !important;
+            padding-top: 6px !important;
+            line-height: 1.45 !important;
           }
           .footer-contact-text br { display: none; }
 

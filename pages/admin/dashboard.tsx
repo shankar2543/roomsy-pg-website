@@ -8,7 +8,7 @@ import { PG } from "@/types/pg";
 import {
   HiHome, HiOfficeBuilding, HiUsers,
   HiChevronRight, HiShieldCheck, HiCurrencyRupee, HiOutlineBell,
-  HiOutlineUser, HiCalendar,
+  HiCalendar, HiOutlineLogout,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import NotificationBell from "@/components/common/NotificationBell";
@@ -19,7 +19,6 @@ const NAV_ITEMS = [
   { href: "/admin/bookings",  label: "Bookings",  icon: <HiCalendar size={20} />,        iconSm: <HiCalendar size={22} /> },
   { href: "/admin/users",     label: "Users",     icon: <HiUsers size={20} />,           iconSm: <HiUsers size={22} /> },
   { href: "/admin/revenue",   label: "Revenue",   icon: <HiCurrencyRupee size={20} />,   iconSm: <HiCurrencyRupee size={22} /> },
-  { href: "/profile",         label: "My Profile", icon: <HiOutlineUser size={20} />,    iconSm: <HiOutlineUser size={22} /> },
 ];
 
 export const STATES = [
@@ -85,7 +84,7 @@ function AdminSidebar({ active }: { active: string }) {
                 display: "flex", alignItems: "center", gap: "12px",
                 padding: "11px 14px", borderRadius: "11px", textDecoration: "none",
                 backgroundColor: isActive ? "#FFF0F3" : "transparent",
-                color: isActive ? "#FF385C" : "#44403C",
+                color: isActive ? "#FF385C" : "#1C1917",
                 fontFamily: "var(--font-body)", fontSize: "15px",
                 fontWeight: isActive ? "600" : "500", marginBottom: "3px",
                 transition: "all 0.15s",
@@ -105,7 +104,7 @@ function AdminSidebar({ active }: { active: string }) {
               display: "flex", alignItems: "center", gap: "12px",
               padding: "11px 14px", borderRadius: "11px",
               backgroundColor: "transparent",
-              color: "#44403C", fontFamily: "var(--font-body)",
+              color: "#1C1917", fontFamily: "var(--font-body)",
               fontSize: "15px", fontWeight: "500",
               marginBottom: "3px", marginTop: "2px",
               textDecoration: "none",
@@ -121,18 +120,61 @@ function AdminSidebar({ active }: { active: string }) {
           </Link>
         </div>
 
-        <div style={{ marginTop: "auto", borderTop: "1px solid #F0EDE8", padding: "20px 24px 28px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "#FFF0F3", borderRadius: "100px", padding: "3px 10px", marginBottom: "10px" }}>
-            <HiShieldCheck size={12} color="#FF385C" />
-            <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "700", color: "#FF385C", letterSpacing: "0.5px", textTransform: "uppercase" }}>Platform Admin</span>
-          </div>
-          {user && (
-            <>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: "700", color: "#1C1917", marginBottom: "3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</p>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#78716C", marginBottom: "14px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</p>
-            </>
-          )}
-          <button onClick={() => setConfirmLogout(true)} style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "#DC2626", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+        <div style={{
+          marginTop: "auto",
+          borderTop: "1px solid #F0EDE8",
+          padding: "14px 14px calc(28px + env(safe-area-inset-bottom))",
+          position: "sticky",
+          bottom: 0,
+          background: "linear-gradient(180deg, rgba(255,245,240,0.94) 0%, #FDFCFA 100%)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+        }}>
+          <Link
+            href="/profile"
+            style={{
+              display: "flex", alignItems: "center", gap: "12px",
+              padding: "10px 12px", borderRadius: "12px",
+              backgroundColor: router.pathname === "/profile" ? "#FFF0F3" : "transparent",
+              textDecoration: "none", marginBottom: "10px",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => { if (router.pathname !== "/profile") e.currentTarget.style.backgroundColor = "#F9F7F4"; }}
+            onMouseLeave={(e) => { if (router.pathname !== "/profile") e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            <span style={{
+              width: "36px", height: "36px", borderRadius: "50%",
+              background: "linear-gradient(135deg, #FF385C 0%, #FF6B85 100%)",
+              color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 700,
+              flexShrink: 0,
+              boxShadow: "0 2px 6px rgba(255,56,92,0.3)",
+            }}>
+              {getInitials(user?.name || user?.email)}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 700, color: "#1C1917", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user?.name || "Admin"}
+              </p>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "#FF385C", margin: 0, fontWeight: 600 }}>
+                My Profile
+              </p>
+            </div>
+          </Link>
+          <button
+            onClick={() => setConfirmLogout(true)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%",
+              padding: "10px 14px", border: "1px solid #FECACA",
+              borderRadius: "10px", background: "#FEF2F2", cursor: "pointer",
+              fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, color: "#B91C1C",
+              transition: "background 0.15s, border-color 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#FEE2E2"; e.currentTarget.style.borderColor = "#FCA5A5"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.borderColor = "#FECACA"; }}
+          >
+            <HiOutlineLogout size={16} />
             Log out
           </button>
         </div>
@@ -182,7 +224,7 @@ function AdminSidebar({ active }: { active: string }) {
       )}
 
       <style>{`
-        .pg-sidebar { width: 280px; flex-shrink: 0; background: linear-gradient(180deg, #FFE4EA 0%, #FFF5F0 35%, #FDFCFA 100%); border-right: 1px solid rgba(232, 228, 222, 0.6); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .pg-sidebar { width: 280px; flex-shrink: 0; background: linear-gradient(180deg, #FFE4EA 0%, #FFF5F0 35%, #FDFCFA 100%); border-right: 1px solid rgba(232, 228, 222, 0.6); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 30; }
         .pg-mobile-topbar { display: none; }
         .adm-topbar-avatar {
           width: 32px; height: 32px;

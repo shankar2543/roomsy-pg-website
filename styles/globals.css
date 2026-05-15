@@ -11,12 +11,22 @@
   --color-border: #E8E4DE;
   --color-success: #15803D;
 
-  --font-display: "Quicksand", system-ui, -apple-system, sans-serif;
-  --font-body: "Quicksand", system-ui, -apple-system, sans-serif;
-
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
   --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.1);
   --shadow-navbar: 0 1px 0 #E8E4DE;
+}
+
+/* Home-page palette (used by the redesigned landing). Set as :root so it
+   cascades to all home components without touching admin/owner styles. */
+:root {
+  --ink: #1A1714;
+  --paper: #F4EEE3;
+  --paper-soft: #EFE6D6;
+  --terracotta: #FF385C;
+  --terracotta-deep: #E31C5F;
+  --ochre: #FF6B85;
+  --rule: rgba(26, 23, 20, 0.12);
+  --muted-ink: rgba(26, 23, 20, 0.62);
 }
 
 * {
@@ -26,7 +36,7 @@
 html {
   background-color: #F9F7F4;
   color: #1C1917;
-  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   font-size: 16px;
   font-weight: 500;          /* tinmen runs body at medium */
   line-height: 1.5;
@@ -38,7 +48,7 @@ html {
 }
 
 body {
-  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   font-weight: 500;
   line-height: 1.5;
   color: #1C1917;
@@ -46,7 +56,7 @@ body {
 
 p {
   margin: 0;
-  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.6;          /* leading-relaxed, matches tinmen body copy */
@@ -61,7 +71,7 @@ small,
 }
 
 a, button, input, select, textarea {
-  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   font-weight: 500;
 }
 
@@ -102,9 +112,9 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* Heading scale — Quicksand, modelled on tinmen.ai's typography */
+/* Heading scale */
 h1, h2, h3, h4 {
-  font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   margin: 0;
   color: #1C1917;
 }
@@ -153,15 +163,24 @@ h4 {
 ::-webkit-scrollbar-thumb:hover { background: rgba(120, 113, 108, 0.55); }
 html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
 
-/* PG Admin shared layout */
+/* PG Admin shared layout — sidebar is fixed, so we offset the main column */
 .pg-layout {
-  display: flex;
+  display: block;
   min-height: 100vh;
   background-color: #F9F7F4;
+  padding-left: 280px;
 }
 .pg-main {
-  flex: 1;
   overflow-x: hidden;
+  min-height: 100vh;
+}
+.pg-admin-footer-offset {
+  padding-left: 280px;
+  background: #1A1714;
+}
+@media (max-width: 768px) {
+  .pg-layout { padding-left: 0; }
+  .pg-admin-footer-offset { padding-left: 0; }
 }
 .pg-content {
   padding: 36px 40px 80px;
@@ -412,10 +431,12 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   border-right: 1px solid rgba(232, 228, 222, 0.6);
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
   overflow-y: auto;
+  z-index: 30;
 }
 
 /* Sidebar top header — Roomsy brand + avatar (always visible) */

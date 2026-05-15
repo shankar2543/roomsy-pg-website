@@ -3,8 +3,8 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import CustomerSidebar from "@/components/common/CustomerSidebar";
 import { BookingRowSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getBookingsForUser, cancelBooking, StoredBooking } from "@/lib/bookingService";
@@ -606,21 +606,25 @@ export default function MyBookingsPage() {
   return (
     <>
       <Head><title>My Bookings — Roomsy</title></Head>
-      <Navbar />
-
-      <main className="bk-main">
+      <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
+        <CustomerSidebar active="/bookings" />
+        <main className="bk-main">
+          <div className="dash-hero-bar">
+            <div className="dash-hero-text">
+              <Link href="/pgs" className="dash-hero-back" aria-label="Back to browse PGs">
+                <HiArrowLeft size={18} />
+              </Link>
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(18px,3vw,24px)", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", marginBottom: "4px" }}>
+                My Bookings
+              </h1>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "rgba(255,255,255,0.72)", margin: 0 }}>
+                {bookings.length === 0
+                  ? "You haven't made any bookings yet."
+                  : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""} total`}
+              </p>
+            </div>
+          </div>
         <div className="bk-shell">
-
-          <Link href="/pgs" className="bk-back" aria-label="Back to browse PGs">
-            <HiArrowLeft size={18} />
-          </Link>
-          <h1 className="bk-title">My Bookings</h1>
-          <p className="bk-sub">
-            {bookings.length === 0
-              ? "You haven't made any bookings yet."
-              : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""} total`}
-          </p>
-
           {bookings.length > 0 && (
             <div className="bk-tabs">
               {STATUS_TABS.map((tab) => {
@@ -668,6 +672,9 @@ export default function MyBookingsPage() {
         </div>
       </main>
 
+        <Footer />
+      </div>
+
       {rateTarget && (
         <RateStayModal
           booking={rateTarget}
@@ -676,18 +683,15 @@ export default function MyBookingsPage() {
         />
       )}
 
-      <Footer />
-
       <style jsx>{`
         .bk-main {
           min-height: 100vh;
           background: #F9F7F4;
-          padding-top: 72px;
         }
         .bk-shell {
           max-width: 1200px;
           margin: 0 auto;
-          padding: 36px 32px 80px;
+          padding: 28px 32px 80px;
         }
         .bk-list {
           display: grid;
@@ -697,32 +701,6 @@ export default function MyBookingsPage() {
         @media (max-width: 900px) {
           .bk-list { grid-template-columns: 1fr; }
         }
-        .bk-back {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-family: var(--font-body);
-          font-size: 13px;
-          color: #78716C;
-          text-decoration: none;
-          margin-bottom: 14px;
-        }
-        .bk-back:hover { color: #1C1917; }
-        .bk-title {
-          font-family: var(--font-display);
-          font-size: clamp(24px, 4vw, 32px);
-          font-weight: 600;
-          color: #1C1917;
-          letter-spacing: -0.5px;
-          margin: 0 0 6px;
-        }
-        .bk-sub {
-          font-family: var(--font-body);
-          font-size: 14px;
-          color: #78716C;
-          margin: 0 0 24px;
-        }
-
         .bk-tabs {
           display: grid;
           grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -837,9 +815,7 @@ export default function MyBookingsPage() {
 
         /* ── Mobile (≤640px) ── */
         @media (max-width: 640px) {
-          .bk-main { padding-top: 60px; }
           .bk-shell { padding: 18px 14px 60px; }
-          .bk-sub { margin-bottom: 16px; }
 
           .bk-tabs {
             display: grid;

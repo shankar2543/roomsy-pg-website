@@ -1,126 +1,153 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { HiArrowRight } from "react-icons/hi";
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function HostCTA() {
   return (
-    <section className="hostcta-section" style={{ backgroundColor: "#F9F7F4", padding: "32px 16px 56px" }}>
+    <section className="hostcta-section" style={{ backgroundColor: "#FFFFFF", padding: "24px 24px 112px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.97 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8, ease }}
-          style={{ backgroundColor: "#1C1917", borderRadius: "28px", padding: "64px 56px", display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: "40px", position: "relative", overflow: "hidden" }}
+          style={{
+            backgroundColor: "var(--ink)", borderRadius: "6px",
+            padding: "72px 72px",
+            position: "relative", overflow: "hidden",
+            display: "grid", gridTemplateColumns: "1.4fr 1fr",
+            alignItems: "center", gap: "48px",
+          }}
           className="host-cta-grid"
         >
-          {/* Glows */}
+          {/* Decorative oversize italic background */}
+          <span aria-hidden="true" style={{
+            position: "absolute",
+            top: "-30px", right: "-20px",
+            fontFamily: "var(--font-display)", fontStyle: "italic",
+            fontSize: "240px", fontWeight: 400, lineHeight: 1,
+            color: "rgba(244,238,227,0.04)",
+            pointerEvents: "none", letterSpacing: "-0.05em",
+            fontVariationSettings: "'opsz' 144, 'SOFT' 100",
+            whiteSpace: "nowrap",
+          }}>
+            owners
+          </span>
+
+          {/* Soft glow */}
           <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.6, 1, 0.6] }}
+            aria-hidden="true"
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="hostcta-glow"
-            style={{ position: "absolute", top: "-60px", right: "200px", width: "300px", height: "300px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)", pointerEvents: "none" }}
-          />
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="hostcta-glow"
-            style={{ position: "absolute", bottom: "-40px", right: "80px", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", pointerEvents: "none" }}
+            style={{
+              position: "absolute", bottom: "-80px", left: "30%",
+              width: "320px", height: "320px", borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(255,56,92,0.22) 0%, transparent 60%)",
+              pointerEvents: "none",
+            }}
           />
 
           <div style={{ position: "relative", zIndex: 1 }}>
             <motion.p
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, ease, delay: 0.2 }}
-              className="hostcta-eyebrow"
-              style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255, 56, 92, 0.12)", border: "1px solid rgba(255, 56, 92, 0.28)", borderRadius: "100px", padding: "3px 9px 3px 7px", fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: "600", color: "#FF385C", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "16px" }}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "10px",
+                fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 700,
+                color: "var(--terracotta)", letterSpacing: "3px", textTransform: "uppercase",
+                marginBottom: "20px",
+              }}
             >
-              <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: "#FF385C", flexShrink: 0 }} />
-              For PG Owners
+              <span style={{ width: "28px", height: "1px", backgroundColor: "var(--terracotta)" }} />
+              For owners
             </motion.p>
             <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, ease, delay: 0.3 }}
+              transition={{ duration: 0.7, ease, delay: 0.3 }}
               className="hostcta-h2"
-              style={{ fontFamily: "var(--font-display)", fontSize: "clamp(26px, 3.5vw, 44px)", fontWeight: "600", color: "#F9F7F4", letterSpacing: "-1px", lineHeight: "1.15", marginBottom: "16px" }}
+              style={{
+                fontFamily: "var(--font-display)", fontSize: "clamp(28px, 3.6vw, 48px)",
+                fontWeight: 600, color: "var(--paper)", letterSpacing: "-0.025em", lineHeight: "1.1",
+                marginBottom: "20px",
+              }}
             >
-              List your PG and{" "}
-              <span style={{ color: "#FF385C", fontStyle: "italic" }}>start earning</span>
+              List your PG. <span style={{ fontStyle: "italic", color: "var(--terracotta)" }}>Start earning</span> by month-end.
             </motion.h2>
             <motion.p
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, ease, delay: 0.4 }}
+              transition={{ duration: 0.7, ease, delay: 0.4 }}
               className="hostcta-desc"
-              style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "#A8A29E", lineHeight: "1.6", maxWidth: "480px" }}
+              style={{
+                fontFamily: "var(--font-body)", fontSize: "15px",
+                color: "rgba(244,238,227,0.6)", lineHeight: "1.7",
+                maxWidth: "460px",
+              }}
             >
-              Join hundreds of verified PG owners on Roomsy. Get quality tenants with ID-verified bookings directly — no brokerage, no middlemen.
+              Join verified PG owners across India. Get ID-checked tenants directly —
+              free to list, no commission, no platform cut on rent.
             </motion.p>
           </div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
+            initial={{ opacity: 0, scale: 0.92 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.4 }}
-            style={{ position: "relative", zIndex: 1, flexShrink: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24, delay: 0.4 }}
+            style={{ position: "relative", zIndex: 1, justifySelf: "end" }}
+            className="hostcta-cta-wrap"
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                href="/auth/signup?role=pg_admin"
-                className="hostcta-btn"
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", backgroundColor: "#FF385C", color: "#fff", textDecoration: "none", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", borderRadius: "14px", padding: "16px 32px", whiteSpace: "nowrap" }}
-              >
-                Become a Host →
-              </Link>
-            </motion.div>
-            <p className="hostcta-fineprint" style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#57534E", textAlign: "center", marginTop: "10px" }}>
-              Free to list · No commission
+            <Link
+              href="/auth/signup?role=pg_admin"
+              className="hostcta-btn"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "14px",
+                backgroundColor: "var(--terracotta)", color: "#fff",
+                textDecoration: "none",
+                fontFamily: "var(--font-body)", fontSize: "12px",
+                fontWeight: 700, letterSpacing: "2.4px", textTransform: "uppercase",
+                borderRadius: "4px", padding: "20px 32px", whiteSpace: "nowrap",
+                transition: "background 0.2s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--terracotta-deep)")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--terracotta)")}
+            >
+              Become a host
+              <HiArrowRight size={14} />
+            </Link>
+            <p style={{
+              fontFamily: "var(--font-body)", fontSize: "11px",
+              color: "rgba(244,238,227,0.4)", textAlign: "center",
+              marginTop: "14px", letterSpacing: "1.2px",
+            }}>
+              Free to list &middot; No commission
             </p>
           </motion.div>
         </motion.div>
       </div>
 
       <style>{`
-        @media (max-width: 640px) {
-          .hostcta-section { padding: 12px 14px 32px !important; }
+        @media (max-width: 900px) {
           .host-cta-grid {
             grid-template-columns: 1fr !important;
-            padding: 22px 18px !important;
-            gap: 14px !important;
-            border-radius: 18px !important;
-            text-align: left;
+            padding: 48px 36px !important;
+            gap: 32px !important;
           }
-          .hostcta-glow { display: none !important; }
-          .hostcta-eyebrow {
-            font-size: 10px !important;
-            margin-bottom: 8px !important;
-            letter-spacing: 0.8px !important;
-          }
-          .hostcta-h2 {
-            font-size: 20px !important;
-            letter-spacing: -0.5px !important;
-            margin-bottom: 8px !important;
-          }
-          .hostcta-desc {
-            font-size: 12px !important;
-            line-height: 1.45 !important;
-          }
-          .hostcta-btn {
-            font-size: 14px !important;
-            padding: 12px 22px !important;
-            border-radius: 100px !important;
-          }
-          .hostcta-fineprint {
-            font-size: 11px !important;
-            margin-top: 6px !important;
-          }
+          .hostcta-cta-wrap { justify-self: start !important; }
+        }
+        @media (max-width: 640px) {
+          .hostcta-section { padding: 12px 16px 72px !important; }
+          .host-cta-grid { padding: 32px 24px !important; gap: 24px !important; }
+          .hostcta-h2 { font-size: 26px !important; }
+          .hostcta-desc { font-size: 13px !important; }
+          .hostcta-btn { padding: 16px 24px !important; font-size: 11px !important; }
         }
       `}</style>
     </section>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
@@ -11,9 +12,9 @@ import {
   HiOutlineBadgeCheck, HiOutlineCamera, HiOutlinePencil,
   HiOutlineShieldCheck, HiOutlineCheckCircle, HiOutlineX,
   HiOutlineUpload, HiOutlineCalendar, HiOutlineHome,
-  HiOutlineLogout,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import CustomerSidebar from "@/components/common/CustomerSidebar";
 
 const ID_LABELS: Record<string, string> = {
   aadhaar: "Aadhaar Card",
@@ -57,6 +58,7 @@ export default function ProfilePage() {
 
   const verified = !!user.idProofUrl;
   const isPlatformAdmin = user.role === "platform_admin";
+  const isCustomer = user.role === "customer";
   const completionItems = [
     { label: "Name", done: !!user.name },
     { label: "Email", done: !!user.email },
@@ -123,13 +125,9 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   }
 
-  return (
+  const profileBody = (
     <>
-      <Head><title>My Profile — Roomsy</title></Head>
-      {isPlatformAdmin ? <AdminSidebar active="/profile" /> : <Navbar />}
-
-      <main className={`profile-main ${isPlatformAdmin ? "profile-main-admin" : ""}`}>
-        {/* Decorative gradient header */}
+      {/* Decorative gradient header */}
         <div className="profile-hero">
           <div className="profile-hero-blob blob-1" />
           <div className="profile-hero-blob blob-2" />
@@ -385,20 +383,38 @@ export default function ProfilePage() {
             </section>
           )}
 
-          {isPlatformAdmin && (
-            <button onClick={() => setConfirmLogout(true)} className="profile-logout-card">
-              <span className="profile-logout-icon"><HiOutlineLogout size={20} /></span>
-              <div className="profile-logout-text">
-                <p className="profile-logout-title">Log out</p>
-                <p className="profile-logout-sub">You&apos;ll be signed out of the Admin Panel.</p>
-              </div>
-            </button>
-          )}
-
         </div>
-      </main>
+    </>
+  );
 
-      {!isPlatformAdmin && <Footer />}
+  return (
+    <>
+      <Head><title>My Profile — Roomsy</title></Head>
+      {isPlatformAdmin ? (
+        <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
+          <AdminSidebar active="/profile" />
+          <main className="profile-main profile-main-admin" style={{ flex: 1, overflowX: "hidden" }}>
+            {profileBody}
+          </main>
+        </div>
+      ) : isCustomer ? (
+        <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
+          <CustomerSidebar active="/profile" />
+          <main className="profile-main profile-main-admin" style={{ flex: 1, overflowX: "hidden" }}>
+            {profileBody}
+          </main>
+          <Footer />
+        </div>
+      ) : (
+        <>
+          <Navbar />
+          <main className="profile-main">
+            {profileBody}
+          </main>
+        </>
+      )}
+
+      {!isPlatformAdmin && !isCustomer && <Footer />}
 
       {confirmLogout && (
         <LogoutModal
@@ -407,7 +423,7 @@ export default function ProfilePage() {
         />
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
         .profile-logout-card {
           width: 100%;
           display: flex;

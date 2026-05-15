@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import { Quicksand } from "next/font/google";
 import { initParse } from "@/lib/parseConfig";
 import { useAuthStore } from "@/store/useAuthStore";
+import Footer from "@/components/common/Footer";
 import "@/styles/globals.css";
 
 const SITE_URL  = "https://pg-website-gamma.vercel.app";
@@ -16,14 +17,14 @@ const OG_IMAGE  = `${SITE_URL}/apple-touch-icon.png`;
 
 initParse();
 
-const quicksandDisplay = Quicksand({
+const displayFont = Quicksand({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const quicksandBody = Quicksand({
+const bodyFont = Quicksand({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["400", "500", "600", "700"],
@@ -53,7 +54,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [restoreSession, router.events]);
 
   return (
-    <main className={`${quicksandDisplay.variable} ${quicksandBody.variable}`}>
+    <main className={`${displayFont.variable} ${bodyFont.variable}`}>
       <Head>
         {/* Primary */}
         <title>{`${SITE_NAME} — Find Verified PGs Across India`}</title>
@@ -95,6 +96,11 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <QueryClientProvider client={queryClient}>
         {mounted ? <Component {...pageProps} /> : null}
+        {mounted && (router.pathname.startsWith("/admin") || router.pathname.startsWith("/pg-admin")) && (
+          <div className="pg-admin-footer-offset">
+            <Footer />
+          </div>
+        )}
         <Toaster
           position="bottom-right"
           toastOptions={{
