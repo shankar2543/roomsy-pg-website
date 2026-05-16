@@ -21,7 +21,7 @@ export default function SearchByCategory() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
           className="cat-header"
-          style={{ marginBottom: "64px" }}
+          style={{ marginBottom: "44px" }}
         >
           <p className="cat-eyebrow" style={{
             display: "inline-flex", alignItems: "center", gap: "10px",

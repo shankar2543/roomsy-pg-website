@@ -312,9 +312,9 @@ export default function Navbar() {
             aria-label={user ? "Menu" : "Account"}
           >
             {user ? (
-              <HiOutlineMenu size={26} color="#1C1917" />
+              <HiOutlineMenu size={26} color={transparent ? "#fff" : "#1C1917"} />
             ) : (
-              <HiUserCircle size={28} color="#1C1917" />
+              <HiUserCircle size={28} color={transparent ? "#fff" : "#1C1917"} />
             )}
           </button>
 

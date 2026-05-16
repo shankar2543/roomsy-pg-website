@@ -182,3 +182,14 @@ export function getBookingEndDate(booking: ServiceBooking): Date {
   end.setDate(end.getDate() + (booking.nights ?? 1));
   return end;
 }
+
+export function getEffectiveBookingStatus(booking: ServiceBooking): BookingStatus {
+  if (booking.status === "confirmed") {
+    const end = getBookingEndDate(booking);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    if (end.getTime() < today.getTime()) return "completed";
+  }
+  return booking.status;
+}

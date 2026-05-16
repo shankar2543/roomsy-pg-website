@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForOwner, confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin, getSignedIdProofUrl, StoredBooking } from "@/lib/bookingService";
+import { getBookingsForOwner, confirmBooking as confirmBookingAdmin, rejectBooking as rejectBookingAdmin, getSignedIdProofUrl, getEffectiveBookingStatus, StoredBooking } from "@/lib/bookingService";
 import { Sidebar } from "./dashboard";
 import {
   HiCalendar, HiPhone, HiX, HiCheckCircle, HiXCircle, HiEye,
@@ -86,8 +86,9 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
   onReject: (id: string) => void;
   onViewProof: (bookingId: string) => void;
 }) {
-  const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
-  const isPending = booking.status === "pending";
+  const effectiveStatus = getEffectiveBookingStatus(booking);
+  const st = STATUS_STYLE[effectiveStatus] || STATUS_STYLE.pending;
+  const isPending = effectiveStatus === "pending";
 
   return (
     <div
@@ -102,7 +103,7 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
     >
       {/* Info */}
       <div className="o-booking-info" style={{ flex: 1, minWidth: 0 }}>
-        {/* Row 1: Name + phone (left) ↔ Status badge (right) */}
+        {/* Row 1: Name + phone */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "5px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: "700", color: "#1C1917", whiteSpace: "nowrap" }}>
@@ -114,7 +115,7 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
               </a>
             )}
           </div>
-          <div className="o-status-badge-mobile" style={{ display: "inline-flex", alignItems: "center", gap: "5px", backgroundColor: st.bg, borderRadius: "100px", padding: "3px 9px", flexShrink: 0 }}>
+          <div className="o-status-badge-inline o-status-badge-mobile" style={{ display: "inline-flex", alignItems: "center", gap: "5px", backgroundColor: st.bg, borderRadius: "100px", padding: "3px 9px", flexShrink: 0 }}>
             <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: st.dot }} />
             <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "600", color: st.color }}>{st.label}</span>
           </div>
@@ -152,6 +153,10 @@ function BookingRow({ booking, onConfirm, onReject, onViewProof }: {
         </div>
 
         <div className="o-booking-actions">
+          <div className="o-status-badge-desktop" style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: st.bg, borderRadius: "100px", padding: "6px 12px", flexShrink: 0, minWidth: "110px", justifyContent: "center" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: st.dot }} />
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: st.color }}>{st.label}</span>
+          </div>
           {booking.idProofUrl && (
             <button onClick={() => onViewProof(booking.objectId)} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "#3B82F6", padding: "6px 12px", borderRadius: "100px", border: "1.5px solid #BFDBFE", backgroundColor: "#EFF6FF", cursor: "pointer", whiteSpace: "nowrap" }}>
               <HiEye size={13} /> ID
@@ -229,20 +234,21 @@ export default function PGAdminBookings() {
     }
   }
 
+  const effStatus = (b: StoredBooking) => getEffectiveBookingStatus(b);
   const counts: Record<StatusFilter, number> = {
     all:       bookings.length,
-    pending:   bookings.filter((b) => b.status === "pending").length,
-    confirmed: bookings.filter((b) => b.status === "confirmed").length,
-    completed: bookings.filter((b) => b.status === "completed").length,
-    cancelled: bookings.filter((b) => b.status === "cancelled" || b.status === "rejected").length,
-    rejected:  bookings.filter((b) => b.status === "rejected").length,
+    pending:   bookings.filter((b) => effStatus(b) === "pending").length,
+    confirmed: bookings.filter((b) => effStatus(b) === "confirmed").length,
+    completed: bookings.filter((b) => effStatus(b) === "completed").length,
+    cancelled: bookings.filter((b) => effStatus(b) === "cancelled" || effStatus(b) === "rejected").length,
+    rejected:  bookings.filter((b) => effStatus(b) === "rejected").length,
   };
 
   const filtered = filter === "all"
     ? bookings
     : filter === "cancelled"
-    ? bookings.filter((b) => b.status === "cancelled" || b.status === "rejected")
-    : bookings.filter((b) => b.status === filter);
+    ? bookings.filter((b) => effStatus(b) === "cancelled" || effStatus(b) === "rejected")
+    : bookings.filter((b) => effStatus(b) === filter);
 
   return (
     <>

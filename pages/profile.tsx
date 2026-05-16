@@ -7,6 +7,7 @@ import Footer from "@/components/common/Footer";
 import { useAuthStore } from "@/store/useAuthStore";
 import { updateCurrentUser } from "@/lib/authService";
 import { AdminSidebar, LogoutModal } from "@/pages/admin/dashboard";
+import { Sidebar as PgAdminSidebar } from "@/pages/pg-admin/dashboard";
 import {
   HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker,
   HiOutlineBadgeCheck, HiOutlineCamera, HiOutlinePencil,
@@ -59,6 +60,7 @@ export default function ProfilePage() {
   const verified = !!user.idProofUrl;
   const isPlatformAdmin = user.role === "platform_admin";
   const isCustomer = user.role === "customer";
+  const isPgAdmin = user.role === "pg_admin";
   const completionItems = [
     { label: "Name", done: !!user.name },
     { label: "Email", done: !!user.email },
@@ -124,6 +126,290 @@ export default function ProfilePage() {
     };
     reader.readAsDataURL(file);
   }
+
+  const firstName = (user.name || "").trim().split(/\s+/)[0] || "";
+
+  const roleEyebrow = isPlatformAdmin
+    ? "Administrator — Profile · 01"
+    : isPgAdmin
+    ? "Owner — Profile · 01"
+    : "Member — Profile · 01";
+  const roleAccountValue = isPlatformAdmin
+    ? "Platform administrator"
+    : isPgAdmin
+    ? "Property owner"
+    : "Member";
+  const roleSubStatus = isPlatformAdmin
+    ? "Administrator"
+    : isPgAdmin
+    ? (verified ? "Verified host" : "Identity pending")
+    : (verified ? "Verified" : "Identity pending");
+  const completionDoneNote = isPlatformAdmin
+    ? "Everything in order."
+    : isPgAdmin
+    ? "Everything in order. Tenants will recognise you at a glance."
+    : "Everything in order. You'll get the smoothest booking flow.";
+  const completionPendingNote = isPlatformAdmin
+    ? "Complete the remaining details for a tidy profile."
+    : isPgAdmin
+    ? "Complete the remaining details — verified profiles attract faster bookings."
+    : "Complete the remaining details to unlock faster bookings.";
+  const bioPlaceholder = isPgAdmin
+    ? "A short note about yourself — for your tenants."
+    : "A short note about yourself — work, study, lifestyle.";
+
+  const ownerProfileBody = (
+    <>
+      {/* Editorial hero — full-bleed dark band */}
+      <header className="own-hero">
+        <div className="own-hero-inner">
+          <p className="own-eyebrow">
+            <span className="own-eyebrow-line" />
+            {roleEyebrow}
+          </p>
+          <h1 className="own-title">
+            {firstName ? (
+              <>Welcome back, <em>{firstName}</em>.</>
+            ) : (
+              <>A note about <em>you</em>.</>
+            )}
+          </h1>
+          <p className="own-sub">
+            {roleSubStatus}
+            <span className="own-sub-sep">·</span>
+            Member since 2025
+            <span className="own-sub-sep">·</span>
+            {user.email}
+          </p>
+          {!editing && (
+            <button className="own-edit-btn" onClick={() => setEditing(true)}>
+              <HiOutlinePencil size={12} />
+              <span>Edit profile</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      <div className="own-profile">
+      <div className="own-grid">
+        {/* LEFT column: portrait + contact / form */}
+        <section className="own-col own-col-left">
+          <div className="own-portrait">
+            <div className="own-avatar">
+              {user.profilePic ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.profilePic} alt={user.name || user.email} />
+              ) : (
+                <span>{getInitials(user.name || user.email)}</span>
+              )}
+            </div>
+            <button
+              className="own-link-btn"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {user.profilePic ? "Change photograph" : "Add a photograph"}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handlePhotoChange}
+            />
+          </div>
+
+          {!editing && (
+            <div className="own-section">
+              <p className="own-section-label">
+                <span className="own-eyebrow-line short" />
+                02 — Contact details
+              </p>
+              <ul className="own-info">
+                <li>
+                  <span className="own-info-num">i.</span>
+                  <div>
+                    <p className="own-info-key">Email</p>
+                    <p className="own-info-val">{user.email}</p>
+                  </div>
+                </li>
+                <li>
+                  <span className="own-info-num">ii.</span>
+                  <div>
+                    <p className="own-info-key">Phone</p>
+                    <p className="own-info-val">{user.phone ? `+91 ${user.phone}` : "—"}</p>
+                  </div>
+                </li>
+                <li>
+                  <span className="own-info-num">iii.</span>
+                  <div>
+                    <p className="own-info-key">City</p>
+                    <p className="own-info-val">{user.city || "—"}</p>
+                  </div>
+                </li>
+                <li>
+                  <span className="own-info-num">iv.</span>
+                  <div>
+                    <p className="own-info-key">Account</p>
+                    <p className="own-info-val">{roleAccountValue}</p>
+                  </div>
+                </li>
+              </ul>
+              {user.bio && (
+                <p className="own-bio">
+                  <span className="own-bio-mark" aria-hidden>“</span>
+                  {user.bio}
+                </p>
+              )}
+            </div>
+          )}
+
+          {editing && (
+            <div className="own-section">
+              <p className="own-section-label">
+                <span className="own-eyebrow-line short" />
+                02 — Editing details
+              </p>
+              <div className="own-form">
+                <label className="own-field">
+                  <span>Full name</span>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  />
+                </label>
+                <label className="own-field">
+                  <span>Phone</span>
+                  <input
+                    inputMode="numeric"
+                    value={form.phone}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setForm((f) => ({ ...f, phone: v }));
+                    }}
+                    placeholder="10-digit number"
+                  />
+                </label>
+                <label className="own-field">
+                  <span>City</span>
+                  <input
+                    value={form.city}
+                    onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                    placeholder="e.g. Hyderabad"
+                  />
+                </label>
+                <label className="own-field own-field-full">
+                  <span>About you</span>
+                  <textarea
+                    rows={3}
+                    value={form.bio}
+                    onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                    placeholder={bioPlaceholder}
+                  />
+                </label>
+              </div>
+              <div className="own-form-actions">
+                <button
+                  className="own-btn own-btn-ghost"
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="own-btn own-btn-primary"
+                  onClick={handleSave}
+                  disabled={saving || !form.name.trim() || form.phone.length !== 10}
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* RIGHT column: completion + ID */}
+        <section className="own-col own-col-right">
+          <div className="own-section">
+            <p className="own-section-label">
+              <span className="own-eyebrow-line short" />
+              03 — Profile completion
+            </p>
+            <div className="own-completion-row">
+              <span className="own-completion-num">
+                {completion}<small>%</small>
+              </span>
+              <p className="own-completion-note">
+                {completion === 100 ? completionDoneNote : completionPendingNote}
+              </p>
+            </div>
+            <div className="own-rule" />
+            <ul className="own-checks">
+              {completionItems.map((it) => (
+                <li key={it.label} className={it.done ? "is-done" : ""}>
+                  <span className="own-check-mark">
+                    {it.done ? <HiOutlineCheckCircle size={14} /> : <span className="own-dot" />}
+                  </span>
+                  {it.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {!isPlatformAdmin && (
+          <div className="own-section">
+            <div className="own-id-head">
+              <p className="own-section-label">
+                <span className="own-eyebrow-line short" />
+                04 — Identity
+              </p>
+              <span className={`own-pill ${verified ? "verified" : "pending"}`}>
+                {verified ? <><HiOutlineShieldCheck size={12} /> Verified</> : "Pending"}
+              </span>
+            </div>
+            {verified ? (
+              <div className="own-id-uploaded">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={user.idProofUrl} alt="ID" />
+                <div>
+                  <p className="own-info-key">{ID_LABELS[user.idProofType || "aadhaar"]}</p>
+                  <p className="own-info-val">Document on file</p>
+                  <button
+                    className="own-link-btn"
+                    onClick={() => idProofInputRef.current?.click()}
+                  >
+                    Replace document
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="own-id-upload"
+                onClick={() => idProofInputRef.current?.click()}
+              >
+                <span className="own-id-upload-icon"><HiOutlineUpload size={18} /></span>
+                <div>
+                  <p className="own-id-upload-title">Upload your ID proof</p>
+                  <p className="own-id-upload-sub">
+                    Aadhaar · PAN · Driving Licence
+                  </p>
+                </div>
+                <span className="own-id-upload-arrow">→</span>
+              </button>
+            )}
+            <input
+              ref={idProofInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              hidden
+              onChange={handleIdProofChange}
+            />
+          </div>
+          )}
+        </section>
+      </div>
+      </div>
+    </>
+  );
 
   const profileBody = (
     <>
@@ -393,17 +679,24 @@ export default function ProfilePage() {
       {isPlatformAdmin ? (
         <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
           <AdminSidebar active="/profile" />
-          <main className="profile-main profile-main-admin" style={{ flex: 1, overflowX: "hidden" }}>
-            {profileBody}
+          <main className="profile-main profile-main-admin own-main" style={{ flex: 1, overflowX: "hidden" }}>
+            {ownerProfileBody}
           </main>
         </div>
       ) : isCustomer ? (
         <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
           <CustomerSidebar active="/profile" />
-          <main className="profile-main profile-main-admin" style={{ flex: 1, overflowX: "hidden" }}>
-            {profileBody}
+          <main className="profile-main profile-main-admin own-main" style={{ flex: 1, overflowX: "hidden" }}>
+            {ownerProfileBody}
           </main>
           <Footer />
+        </div>
+      ) : isPgAdmin ? (
+        <div className="pg-layout" style={{ minHeight: "100vh", backgroundColor: "#F9F7F4" }}>
+          <PgAdminSidebar active="/profile" />
+          <main className="profile-main profile-main-admin own-main" style={{ flex: 1, overflowX: "hidden" }}>
+            {ownerProfileBody}
+          </main>
         </div>
       ) : (
         <>
@@ -414,7 +707,7 @@ export default function ProfilePage() {
         </>
       )}
 
-      {!isPlatformAdmin && !isCustomer && <Footer />}
+      {!isPlatformAdmin && !isCustomer && !isPgAdmin && <Footer />}
 
       {confirmLogout && (
         <LogoutModal
@@ -989,6 +1282,576 @@ export default function ProfilePage() {
           cursor: pointer;
           text-decoration: underline;
           text-underline-offset: 3px;
+        }
+
+        /* ────────────────────────────────────────────── */
+        /* ── Owner profile (editorial, minimal) ──────── */
+        /* ────────────────────────────────────────────── */
+        .own-main {
+          background: #F9F7F4;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+        .own-profile {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 24px 36px 28px;
+          position: relative;
+          font-family: var(--font-body);
+          color: #1C1917;
+        }
+
+        .own-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          color: #FF385C;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          margin: 0 0 12px;
+        }
+        .own-eyebrow-line {
+          width: 24px;
+          height: 1px;
+          background-color: #FF385C;
+        }
+        .own-eyebrow-line.short { width: 16px; }
+
+        .own-hero {
+          position: relative;
+          margin: 0;
+          padding: 28px 40px;
+          background: linear-gradient(130deg, #1C1917 0%, #FF385C 100%);
+          animation: own-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .own-hero-inner {
+          position: relative;
+          max-width: 1120px;
+          margin: 0 auto;
+        }
+        .own-hero .own-eyebrow {
+          color: rgba(255, 255, 255, 0.85);
+        }
+        .own-hero .own-eyebrow-line {
+          background-color: rgba(255, 255, 255, 0.7);
+        }
+        .own-title {
+          font-family: var(--font-display);
+          font-size: clamp(26px, 3.4vw, 38px);
+          font-weight: 600;
+          color: #FFFBF5;
+          letter-spacing: -0.03em;
+          line-height: 1.05;
+          margin: 0 0 10px;
+          max-width: 760px;
+        }
+        .own-title em {
+          font-style: italic;
+          color: #FFD2DA;
+          font-weight: 500;
+          font-variation-settings: 'opsz' 144, 'SOFT' 80;
+        }
+        .own-sub {
+          font-family: var(--font-body);
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.7);
+          letter-spacing: 0.4px;
+          margin: 0;
+          line-height: 1.7;
+        }
+        .own-sub-sep {
+          display: inline-block;
+          margin: 0 10px;
+          color: rgba(255, 255, 255, 0.35);
+        }
+        .own-edit-btn {
+          position: absolute;
+          top: 0;
+          right: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 18px;
+          background: rgba(255, 255, 255, 0.12);
+          color: #FFFBF5;
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          border-radius: 100px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+          cursor: pointer;
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+        }
+        .own-edit-btn:hover {
+          background: rgba(255, 255, 255, 0.22);
+          border-color: rgba(255, 255, 255, 0.38);
+          transform: translateY(-1px);
+        }
+        .own-edit-btn:active { transform: translateY(0); }
+
+        .own-grid {
+          display: grid;
+          grid-template-columns: 0.95fr 1.1fr;
+          gap: 40px;
+          animation: own-fade-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+        }
+        .own-col {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          min-width: 0;
+        }
+
+        /* Portrait */
+        .own-portrait {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .own-avatar {
+          width: 124px;
+          height: 124px;
+          border-radius: 4px;
+          background: linear-gradient(135deg, #FFE6EA 0%, #FFD2DA 60%, #FFC2CC 100%);
+          color: #FF385C;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 44px;
+          font-weight: 500;
+          letter-spacing: -0.02em;
+          overflow: hidden;
+          border: 1px solid #EFEAE3;
+          filter: saturate(0.92);
+          position: relative;
+        }
+        .own-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .own-link-btn {
+          background: none;
+          border: none;
+          padding: 4px 0 3px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+          color: #FF385C;
+          cursor: pointer;
+          border-bottom: 1px solid currentColor;
+          transition: opacity 0.2s ease, color 0.2s ease;
+        }
+        .own-link-btn:hover { opacity: 0.65; }
+
+        /* Section */
+        .own-section-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          color: #FF385C;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          margin: 0 0 14px;
+        }
+
+        /* Info list */
+        .own-info {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        .own-info li {
+          display: grid;
+          grid-template-columns: 28px 1fr;
+          align-items: baseline;
+          gap: 14px;
+          padding: 10px 0;
+          border-bottom: 1px solid #EFEAE3;
+        }
+        .own-info li:first-child { padding-top: 4px; }
+        .own-info li:last-child { border-bottom: none; padding-bottom: 0; }
+        .own-info-num {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 13px;
+          color: #FF385C;
+          letter-spacing: 0.5px;
+        }
+        .own-info-key {
+          font-family: var(--font-body);
+          font-size: 9px;
+          font-weight: 700;
+          color: #A8A29E;
+          letter-spacing: 2.2px;
+          text-transform: uppercase;
+          margin: 0 0 3px;
+        }
+        .own-info-val {
+          font-family: var(--font-body);
+          font-size: 14px;
+          font-weight: 500;
+          color: #1C1917;
+          margin: 0;
+          word-break: break-word;
+          line-height: 1.35;
+        }
+
+        .own-bio {
+          margin: 16px 0 0;
+          padding: 0 0 0 24px;
+          position: relative;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 15px;
+          color: #44403C;
+          line-height: 1.5;
+          letter-spacing: -0.005em;
+        }
+        .own-bio-mark {
+          position: absolute;
+          left: -2px;
+          top: -10px;
+          font-family: var(--font-display);
+          font-size: 44px;
+          color: #FF385C;
+          line-height: 1;
+          opacity: 0.35;
+          font-style: italic;
+        }
+
+        /* Completion */
+        .own-completion-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 22px;
+          margin-bottom: 16px;
+        }
+        .own-completion-num {
+          font-family: var(--font-display);
+          font-size: 56px;
+          font-weight: 600;
+          color: #1C1917;
+          line-height: 0.88;
+          letter-spacing: -0.045em;
+          display: inline-flex;
+          align-items: flex-start;
+        }
+        .own-completion-num small {
+          font-size: 20px;
+          color: #FF385C;
+          font-style: italic;
+          font-weight: 500;
+          margin: 4px 0 0 4px;
+          letter-spacing: 0;
+        }
+        .own-completion-note {
+          flex: 1;
+          font-family: var(--font-body);
+          font-size: 12px;
+          color: #78716C;
+          line-height: 1.55;
+          margin: 0;
+          padding-top: 6px;
+        }
+        .own-rule {
+          height: 1px;
+          background: #EFEAE3;
+          margin: 14px 0;
+        }
+        .own-checks {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px 24px;
+        }
+        .own-checks li {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-family: var(--font-body);
+          font-size: 12px;
+          color: #A8A29E;
+          letter-spacing: 0.1px;
+        }
+        .own-checks li.is-done { color: #1C1917; }
+        .own-check-mark {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          height: 14px;
+          color: #15803D;
+        }
+        .own-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #D6D3CE;
+          display: inline-block;
+        }
+
+        /* ID */
+        .own-id-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .own-id-head .own-section-label { margin-bottom: 0; }
+        .own-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 12px;
+          border-radius: 100px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 1.8px;
+          text-transform: uppercase;
+        }
+        .own-pill.verified {
+          color: #15803D;
+          background: #ECFDF5;
+          border: 1px solid #BBF7D0;
+        }
+        .own-pill.pending {
+          color: #92400E;
+          background: #FEF7E0;
+          border: 1px solid #FCD34D;
+        }
+        .own-id-upload {
+          display: flex;
+          gap: 14px;
+          align-items: center;
+          padding: 14px 18px;
+          border: 1px dashed #D6D3CE;
+          border-radius: 4px;
+          background: transparent;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          color: #1C1917;
+          transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+        .own-id-upload:hover {
+          border-color: #FF385C;
+          background: #FFF8F5;
+          color: #FF385C;
+        }
+        .own-id-upload-icon {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: #FFF0F3;
+          color: #FF385C;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: background 0.3s ease;
+        }
+        .own-id-upload:hover .own-id-upload-icon {
+          background: #FF385C;
+          color: #fff;
+        }
+        .own-id-upload > div { flex: 1; min-width: 0; }
+        .own-id-upload-title {
+          font-family: var(--font-display);
+          font-size: 15px;
+          font-weight: 500;
+          font-style: italic;
+          color: #1C1917;
+          margin: 0 0 2px;
+          letter-spacing: -0.005em;
+        }
+        .own-id-upload-sub {
+          font-family: var(--font-body);
+          font-size: 10px;
+          color: #78716C;
+          margin: 0;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+        .own-id-upload-arrow {
+          font-family: var(--font-display);
+          font-size: 18px;
+          color: #FF385C;
+          opacity: 0.55;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .own-id-upload:hover .own-id-upload-arrow {
+          transform: translateX(4px);
+          opacity: 1;
+        }
+        .own-id-uploaded {
+          display: flex;
+          gap: 14px;
+          align-items: center;
+          padding: 12px 14px;
+          background: #FDFCFA;
+          border: 1px solid #EFEAE3;
+          border-radius: 4px;
+        }
+        .own-id-uploaded img {
+          width: 80px;
+          height: 56px;
+          object-fit: cover;
+          border-radius: 2px;
+          flex-shrink: 0;
+          filter: saturate(0.95);
+        }
+
+        /* Form */
+        .own-form {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px 24px;
+          margin-bottom: 20px;
+        }
+        .own-field {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .own-field-full { grid-column: 1 / -1; }
+        .own-field > span {
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          color: #A8A29E;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+        }
+        .own-field input,
+        .own-field textarea {
+          padding: 6px 0 8px;
+          border: none;
+          border-bottom: 1px solid #D6D3CE;
+          background: transparent;
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 400;
+          color: #1C1917;
+          outline: none;
+          resize: none;
+          letter-spacing: -0.01em;
+          transition: border-color 0.25s ease;
+        }
+        .own-field input::placeholder,
+        .own-field textarea::placeholder {
+          color: #C4BFB7;
+          font-style: italic;
+        }
+        .own-field input:focus,
+        .own-field textarea:focus {
+          border-color: #FF385C;
+        }
+        .own-form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+        .own-btn {
+          padding: 10px 22px;
+          border-radius: 100px;
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+          border: 1px solid transparent;
+          transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+        .own-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .own-btn:not(:disabled):active { transform: translateY(1px); }
+        .own-btn-ghost {
+          background: transparent;
+          color: #1C1917;
+          border-color: #D6D3CE;
+        }
+        .own-btn-ghost:hover:not(:disabled) { background: #F5F3F0; }
+        .own-btn-primary {
+          background: #1C1917;
+          color: #FFFBF5;
+          border-color: #1C1917;
+        }
+        .own-btn-primary:hover:not(:disabled) {
+          background: #FF385C;
+          border-color: #FF385C;
+        }
+
+        @keyframes own-fade-up {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Owner — responsive */
+        @media (max-width: 1024px) {
+          .own-profile { padding: 28px 32px 32px; }
+          .own-hero { padding: 28px 32px; }
+          .own-grid { gap: 44px; }
+        }
+        @media (max-width: 900px) {
+          .own-profile { padding: 24px 24px 36px; }
+          .own-hero { padding: 22px 24px 24px; }
+          .own-title { font-size: clamp(26px, 6vw, 36px); }
+          .own-edit-btn {
+            position: static;
+            top: auto;
+            right: auto;
+            margin-top: 16px;
+            display: inline-flex;
+          }
+          .own-grid {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
+          .own-col { gap: 36px; }
+          .own-avatar { width: 140px; height: 140px; font-size: 48px; }
+          .own-completion-num { font-size: 60px; }
+          .own-completion-num small { font-size: 22px; margin-top: 4px; }
+          .own-checks { grid-template-columns: 1fr; gap: 10px; }
+          .own-form { grid-template-columns: 1fr; gap: 22px; }
+        }
+        @media (max-width: 540px) {
+          .own-profile { padding: 20px 18px 32px; }
+          .own-hero { padding: 20px 18px 22px; }
+          .own-title { font-size: clamp(22px, 7vw, 30px); }
+          .own-sub { font-size: 12px; }
+          .own-sub-sep { margin: 0 6px; }
+          .own-avatar { width: 112px; height: 112px; font-size: 38px; }
+          .own-completion-num { font-size: 48px; }
+          .own-completion-num small { font-size: 18px; }
+          .own-id-upload { padding: 16px; gap: 12px; }
+          .own-id-upload-title { font-size: 15px; }
+          .own-id-upload-arrow { display: none; }
+          .own-id-uploaded { padding: 12px; gap: 12px; }
+          .own-id-uploaded img { width: 80px; height: 60px; }
+          .own-bio { font-size: 16px; padding-left: 22px; }
+          .own-bio-mark { font-size: 44px; top: -10px; }
         }
 
         /* ── Mobile (≤640px) ── */

@@ -7,7 +7,7 @@ import Footer from "@/components/common/Footer";
 import CustomerSidebar from "@/components/common/CustomerSidebar";
 import { BookingRowSkeleton, useInitialLoading } from "@/components/common/Skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getBookingsForUser, cancelBooking, StoredBooking } from "@/lib/bookingService";
+import { getBookingsForUser, cancelBooking, getEffectiveBookingStatus, StoredBooking } from "@/lib/bookingService";
 import {
   HiLocationMarker, HiCalendar, HiArrowLeft, HiChevronDown,
   HiStar, HiOutlineStar, HiX,
@@ -67,9 +67,10 @@ function BookingCard({
   onCancel: (id: string) => void;
   onRate: (booking: StoredBooking) => void;
 }) {
-  const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
-  const canCancel = booking.status === "pending" || booking.status === "confirmed";
-  const canRate = booking.status === "completed";
+  const effectiveStatus = getEffectiveBookingStatus(booking);
+  const st = STATUS_STYLE[effectiveStatus] || STATUS_STYLE.pending;
+  const canCancel = effectiveStatus === "pending" || effectiveStatus === "confirmed";
+  const canRate = effectiveStatus === "completed";
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -588,17 +589,18 @@ export default function MyBookingsPage() {
 
   const [rateTarget, setRateTarget] = useState<StoredBooking | null>(null);
 
+  const effStatus = (b: StoredBooking) => getEffectiveBookingStatus(b);
   const filtered = statusFilter === "all"
     ? bookings
-    : bookings.filter((b) => b.status === statusFilter);
+    : bookings.filter((b) => effStatus(b) === statusFilter);
 
   const counts: Record<StatusFilter, number> = {
     all:       bookings.length,
-    pending:   bookings.filter((b) => b.status === "pending").length,
-    confirmed: bookings.filter((b) => b.status === "confirmed").length,
-    completed: bookings.filter((b) => b.status === "completed").length,
-    cancelled: bookings.filter((b) => b.status === "cancelled" || b.status === "rejected").length,
-    rejected:  bookings.filter((b) => b.status === "rejected").length,
+    pending:   bookings.filter((b) => effStatus(b) === "pending").length,
+    confirmed: bookings.filter((b) => effStatus(b) === "confirmed").length,
+    completed: bookings.filter((b) => effStatus(b) === "completed").length,
+    cancelled: bookings.filter((b) => effStatus(b) === "cancelled" || effStatus(b) === "rejected").length,
+    rejected:  bookings.filter((b) => effStatus(b) === "rejected").length,
   };
 
   if (!user) return null;

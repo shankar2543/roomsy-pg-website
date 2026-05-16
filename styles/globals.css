@@ -230,6 +230,9 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   border-color: rgba(255, 255, 255, 0.32);
 }
 .dash-hero-back:active { transform: scale(0.92); }
+@media (min-width: 769px) {
+  .dash-hero-back { display: none !important; }
+}
 .dash-hero-avatar {
   position: relative;
   width: 44px;
@@ -444,7 +447,7 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 22px 18px;
+  padding: 16px 20px 12px;
   gap: 12px;
 }
 .pg-sidebar-brand {
@@ -470,7 +473,7 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
-  color: #1C1917;
+  color: #FF385C;
   letter-spacing: -0.3px;
 }
 .pg-sidebar-head-avatar {
@@ -674,7 +677,7 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 600;
-  color: #1C1917;
+  color: #FF385C;
 }
 .pg-topbar-bell {
   position: relative;
@@ -1267,11 +1270,17 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
 
 /* Status badge always shows in the header row */
 .o-status-badge-mobile { display: inline-flex; }
+.o-status-badge-desktop { display: none; }
+@media (min-width: 901px) {
+  .o-status-badge-inline { display: none !important; }
+  .o-status-badge-desktop { display: inline-flex !important; }
+}
 
 /* Owner bookings page (/pg-admin/bookings): fill the screen width on desktop */
 .o-booking-list {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: 1fr !important;
   gap: 10px;
 }
 @media (min-width: 901px) {
@@ -1281,8 +1290,9 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
     padding: 28px 32px 80px !important;
   }
   .o-booking-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     gap: 12px;
   }
 }
@@ -1294,6 +1304,8 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
     border-radius: 100px !important;
     border: 1.5px solid transparent !important;
     margin-top: 5px !important;
+    min-width: 110px !important;
+    justify-content: center !important;
   }
   .o-status-badge-mobile > span {
     font-size: 12px !important;
@@ -1302,6 +1314,32 @@ html { scrollbar-color: rgba(120, 113, 108, 0.35) transparent; }
   .o-status-badge-mobile > div:first-child {
     width: 6px !important;
     height: 6px !important;
+  }
+
+  /* Align right-side columns (badge column inside info, actions, price) across every row */
+  .o-booking-row {
+    align-items: center !important;
+  }
+  .o-booking-right {
+    flex-direction: row !important;
+    width: 540px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+  .o-booking-actions {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+  }
+  .o-booking-price {
+    order: 2;
+    min-width: 90px;
+    justify-content: flex-end !important;
+    text-align: right;
+    flex-shrink: 0;
   }
 }
 

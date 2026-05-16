@@ -6,7 +6,7 @@ const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function HostCTA() {
   return (
-    <section className="hostcta-section" style={{ backgroundColor: "#FFFFFF", padding: "24px 24px 112px" }}>
+    <section className="hostcta-section" style={{ backgroundColor: "#FFFFFF", padding: "24px 24px 48px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -143,7 +143,7 @@ export default function HostCTA() {
           .hostcta-cta-wrap { justify-self: start !important; }
         }
         @media (max-width: 640px) {
-          .hostcta-section { padding: 12px 16px 72px !important; }
+          .hostcta-section { padding: 12px 16px 32px !important; }
           .host-cta-grid { padding: 32px 24px !important; gap: 24px !important; }
           .hostcta-h2 { font-size: 26px !important; }
           .hostcta-desc { font-size: 13px !important; }

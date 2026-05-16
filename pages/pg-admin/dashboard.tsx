@@ -141,12 +141,12 @@ function Sidebar({ active }: { active: string }) {
             const isActive = active === item.href || (item.href !== "/pg-admin/dashboard" && active.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href} style={{
-                display: "flex", alignItems: "center", gap: "12px",
-                padding: "11px 14px", borderRadius: "11px", textDecoration: "none",
+                display: "flex", alignItems: "center", gap: "10px",
+                padding: "7px 12px", borderRadius: "10px", textDecoration: "none",
                 backgroundColor: isActive ? "#FFF0F3" : "transparent",
                 color: isActive ? "#FF385C" : "#1C1917",
-                fontFamily: "var(--font-body)", fontSize: "15px",
-                fontWeight: isActive ? "600" : "500", marginBottom: "3px",
+                fontFamily: "var(--font-body)", fontSize: "14px",
+                fontWeight: isActive ? "600" : "500", marginBottom: "1px",
                 transition: "all 0.15s",
               }}
               onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "#F9F7F4"; }}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getAllBookings, getSignedIdProofUrl, StoredBooking } from "@/lib/bookingService";
+import { getAllBookings, getSignedIdProofUrl, getEffectiveBookingStatus, StoredBooking } from "@/lib/bookingService";
 import { AdminSidebar } from "./dashboard";
 import {
   HiCalendar, HiPhone, HiX, HiEye, HiArrowLeft, HiOfficeBuilding, HiSearch,
@@ -82,7 +82,7 @@ function BookingRow({ booking, onViewProof }: {
   booking: StoredBooking;
   onViewProof: (bookingId: string) => void;
 }) {
-  const st = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
+  const st = STATUS_STYLE[getEffectiveBookingStatus(booking)] || STATUS_STYLE.pending;
 
   return (
     <div
@@ -197,18 +197,19 @@ export default function AdminBookings() {
 
   if (!user || user.role !== "platform_admin") return null;
 
+  const effStatus = (b: StoredBooking) => getEffectiveBookingStatus(b);
   const counts: Record<StatusFilter, number> = {
     all:       bookings.length,
-    pending:   bookings.filter((b) => b.status === "pending").length,
-    confirmed: bookings.filter((b) => b.status === "confirmed").length,
-    completed: bookings.filter((b) => b.status === "completed").length,
-    cancelled: bookings.filter((b) => b.status === "cancelled").length,
-    rejected:  bookings.filter((b) => b.status === "rejected").length,
+    pending:   bookings.filter((b) => effStatus(b) === "pending").length,
+    confirmed: bookings.filter((b) => effStatus(b) === "confirmed").length,
+    completed: bookings.filter((b) => effStatus(b) === "completed").length,
+    cancelled: bookings.filter((b) => effStatus(b) === "cancelled").length,
+    rejected:  bookings.filter((b) => effStatus(b) === "rejected").length,
   };
 
   const q = search.trim().toLowerCase();
   const filtered = bookings
-    .filter((b) => filter === "all" ? true : b.status === filter)
+    .filter((b) => filter === "all" ? true : effStatus(b) === filter)
     .filter((b) => !q
       || (b.tenantName || "").toLowerCase().includes(q)
       || (b.pgName || "").toLowerCase().includes(q)

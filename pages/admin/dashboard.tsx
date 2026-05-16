@@ -70,7 +70,7 @@ function AdminSidebar({ active }: { active: string }) {
           <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: "700", color: "#fff" }}>R</span>
           </div>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "600", color: "#1C1917" }}>Roomsy</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: "600", color: "#FF385C" }}>Roomsy</span>
         </Link>
 
         <div style={{ padding: "0 14px", marginBottom: "8px" }}>
@@ -185,7 +185,7 @@ function AdminSidebar({ active }: { active: string }) {
           <div style={{ width: "28px", height: "28px", borderRadius: "7px", backgroundColor: "#FF385C", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: "700", color: "#fff" }}>R</span>
           </div>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "600", color: "#1C1917" }}>Roomsy</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "600", color: "#FF385C" }}>Roomsy</span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <NotificationBell size={36} />

@@ -333,6 +333,7 @@ export default function Main() {
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease, delay: 0.15 }}
+        className="hero-search-wrap"
         style={{
           position: "relative", zIndex: 10, padding: "16px 20px 0",
           display: "flex", justifyContent: "center",
@@ -570,16 +571,29 @@ export default function Main() {
           .hero-vlabel { display: none !important; }
         }
         @media (max-width: 640px) {
+          .hero-search-wrap { display: none !important; }
           .hero-search-bar {
             flex-direction: column;
             border-radius: 6px !important;
+            max-width: 460px !important;
           }
-          .hero-search-field { padding: 12px 18px; }
+          .hero-search-field { padding: 8px 14px !important; }
+          .hero-search-field input,
+          .hero-search-field select,
+          .hero-search-field button { font-size: 13px !important; }
+          .hero-search-field > span {
+            font-size: 8px !important;
+            letter-spacing: 1.6px !important;
+            margin-bottom: 2px !important;
+          }
           .hero-search-sep {
-            width: auto; height: 1px; margin: 0 18px;
+            width: auto; height: 1px; margin: 0 14px;
           }
           .hero-search-submit {
-            padding: 14px !important; justify-content: center;
+            padding: 10px !important;
+            font-size: 11px !important;
+            letter-spacing: 1.2px !important;
+            justify-content: center;
           }
           .hero-headline { font-size: clamp(30px, 8vw, 44px) !important; }
           .hero-lede { font-size: 14px !important; }

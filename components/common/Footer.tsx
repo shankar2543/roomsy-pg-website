@@ -54,8 +54,10 @@ function ContactRow({ icon, children }: { icon: React.ReactNode; children: React
 }
 
 const SOCIAL = [
-  { icon: <FaFacebookF size={14} />, href: "#" },
-  { icon: <FaInstagram size={14} />, href: "#" },
+  { icon: <FaFacebookF size={14} />, href: "#", label: "Facebook" },
+  { icon: <FaInstagram size={14} />, href: "#", label: "Instagram" },
+  { icon: <FaGooglePlay size={14} />, href: "#", label: "Get it on Google Play" },
+  { icon: <FaApple size={15} />, href: "#", label: "Download on the App Store" },
 ];
 
 export default function Footer() {
@@ -79,24 +81,9 @@ export default function Footer() {
               India&apos;s most trusted platform for finding verified PGs &amp; Hostels. We ensure a safe and comfortable stay for everyone.
             </p>
             <div className="footer-actions" style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
-              <a href="#" aria-label="Get it on Google Play" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", borderRadius: "4px", padding: "10px 16px", color: "rgba(244,238,227,0.85)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 600, letterSpacing: "1.6px", textTransform: "uppercase", minWidth: "120px", height: "36px" }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--terracotta)"; e.currentTarget.style.color = "var(--paper)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; e.currentTarget.style.color = "rgba(244,238,227,0.85)"; }}
-              >
-                <FaGooglePlay size={14} />
-                Android
-              </a>
-              <a href="#" aria-label="Download on the App Store" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", borderRadius: "4px", padding: "10px 16px", color: "rgba(244,238,227,0.85)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 600, letterSpacing: "1.6px", textTransform: "uppercase", minWidth: "120px", height: "36px" }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--terracotta)"; e.currentTarget.style.color = "var(--paper)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; e.currentTarget.style.color = "rgba(244,238,227,0.85)"; }}
-              >
-                <FaApple size={15} />
-                iOS
-              </a>
-
-              <div className="footer-socials" style={{ display: "flex", gap: "10px", marginLeft: "6px" }}>
+              <div className="footer-socials" style={{ display: "flex", gap: "10px" }}>
                 {SOCIAL.map((s, i) => (
-                  <a key={i} href={s.href}
+                  <a key={i} href={s.href} aria-label={s.label}
                     style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "transparent", border: "1px solid rgba(244,238,227,0.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(244,238,227,0.6)", textDecoration: "none", transition: "all 0.2s" }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--terracotta)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "var(--terracotta)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "rgba(244,238,227,0.6)"; e.currentTarget.style.borderColor = "rgba(244,238,227,0.18)"; }}
@@ -171,89 +158,104 @@ export default function Footer() {
           .footer-grid { grid-template-columns: 1fr 1fr !important; }
         }
 
-        /* ── Mobile: tight, minimal layout ─────────────────────── */
+        /* ── Mobile: tight, editorial, calm ─────────────────────── */
         @media (max-width: 640px) {
           .footer-inner {
-            padding: 28px 18px 18px !important;
+            padding: 28px 22px 18px !important;
           }
           .footer-grid {
             grid-template-columns: 1fr 1fr !important;
-            gap: 22px 18px !important;
+            gap: 24px 20px !important;
           }
-          /* Brand row spans the full width with logo + socials inline */
+
+          /* Brand row — centred, stacked */
           .footer-brand {
             grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center;
+            gap: 10px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(244,238,227,0.08);
           }
           .footer-brand-link {
             margin-bottom: 0 !important;
-            gap: 8px !important;
+            gap: 10px !important;
+            justify-content: center;
           }
           .footer-brand-logo {
-            width: 30px !important;
-            height: 30px !important;
+            width: 32px !important;
+            height: 32px !important;
             border-radius: 8px !important;
           }
           .footer-brand-logo span { font-size: 16px !important; }
-          .footer-brand-name { font-size: 18px !important; }
+          .footer-brand-name { font-size: 22px !important; }
           .footer-brand-desc { display: none !important; }
-          .footer-socials { gap: 6px !important; }
+          .footer-actions { gap: 8px !important; justify-content: center !important; margin-top: 4px; }
+          .footer-socials { gap: 8px !important; }
           .footer-socials a {
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 7px !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
           }
 
           /* Section titles smaller and tighter */
           .footer-coltitle {
-            margin-bottom: 14px !important;
-            gap: 10px !important;
+            margin-bottom: 12px !important;
+            gap: 8px !important;
           }
           .footer-coltitle-bar {
-            width: 3px !important;
-            height: 16px !important;
+            width: 2px !important;
+            height: 14px !important;
           }
-          .footer-coltitle h4 { font-size: 14px !important; }
+          .footer-coltitle h4 {
+            font-size: 12px !important;
+            letter-spacing: 0.6px !important;
+            text-transform: uppercase;
+          }
 
           /* Compact link rows */
           .footer-link {
             font-size: 13px !important;
-            margin-bottom: 10px !important;
-            gap: 8px !important;
+            margin-bottom: 8px !important;
+            gap: 6px !important;
           }
 
-          /* Contact column spans full width with inline rows */
-          .footer-contact-col { grid-column: 1 / -1; }
+          /* Contact column spans full width */
+          .footer-contact-col {
+            grid-column: 1 / -1;
+            padding-top: 18px;
+            border-top: 1px solid rgba(244,238,227,0.08);
+          }
           .footer-contact-row {
-            margin-bottom: 8px !important;
-            gap: 8px !important;
+            margin-bottom: 10px !important;
+            gap: 10px !important;
             align-items: center !important;
           }
           .footer-contact-icon {
-            width: 36px !important;
-            height: 36px !important;
-            border-radius: 8px !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 7px !important;
           }
-          .footer-contact-icon span { transform: scale(0.9); display: inline-flex; }
+          .footer-contact-icon span { display: inline-flex; transform: scale(0.85); }
           .footer-contact-text {
-            font-size: 13px !important;
-            padding-top: 6px !important;
+            font-size: 12.5px !important;
+            padding-top: 0 !important;
             line-height: 1.45 !important;
           }
           .footer-contact-text br { display: none; }
 
-          /* Bottom bar: centered, slim */
+          /* Bottom bar: centred, single line, slim */
           .footer-bottom {
-            margin-top: 22px !important;
+            margin-top: 20px !important;
             padding-top: 14px !important;
             flex-direction: column !important;
             text-align: center;
-            gap: 6px !important;
+            gap: 8px !important;
           }
-          .footer-bottom span { font-size: 11px !important; }
+          .footer-bottom > span { font-size: 11px !important; }
+          .footer-bottom > div { gap: 14px !important; justify-content: center; }
         }
       `}</style>
     </footer>
